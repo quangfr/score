@@ -1,0 +1,846 @@
+{
+  "customers": [
+    { "id": "CUST-001", "name": "Air France", "accountCode": "AFR-CIV-01", "country": "France" },
+    { "id": "CUST-002", "name": "Qatar Airways", "accountCode": "QTR-RPFH-03", "country": "Qatar" },
+    { "id": "CUST-003", "name": "Delta Air Lines", "accountCode": "DAL-GTA-09", "country": "United States" },
+    { "id": "CUST-004", "name": "Singapore Airlines", "accountCode": "SIA-LIC-04", "country": "Singapore" },
+    { "id": "CUST-005", "name": "Royal Air Maroc", "accountCode": "RAM-TM-07", "country": "Morocco" },
+    { "id": "CUST-006", "name": "Lufthansa", "accountCode": "DLH-CIV-06", "country": "Germany" },
+    { "id": "CUST-007", "name": "Emirates", "accountCode": "UAE-RPFH-11", "country": "United Arab Emirates" },
+    { "id": "CUST-008", "name": "KLM", "accountCode": "KLM-GTA-02", "country": "Netherlands" },
+    { "id": "CUST-009", "name": "ANA", "accountCode": "ANA-LIC-05", "country": "Japan" },
+    { "id": "CUST-010", "name": "Turkish Airlines", "accountCode": "THY-TM-08", "country": "Turkey" }
+  ],
+  "contracts": [
+    {
+      "id": "CTR-2024-001",
+      "name": "Support long terme A320neo Europe",
+      "type": "T&M",
+      "customerId": "CUST-001",
+      "region": "Europe",
+      "status": "Active",
+      "startDate": "2024-01-01",
+      "endDate": "2028-12-31",
+      "globalValidationStatus": "Valid",
+      "managingTeam": {
+        "name": "Customer Support Paris",
+        "company": "Safran Aircraft Engines",
+        "contact": "Claire Dumont",
+        "email": "claire.dumont@example.com",
+        "phone": "+33 1 44 00 10 10"
+      },
+      "financials": {
+        "currency": "EUR",
+        "billingModel": "Time and Material",
+        "estimatedAnnualValue": 1250000,
+        "rateRevision": "Annuel, indexé inflation UE"
+      },
+      "fleet": {
+        "program": "A320neo",
+        "enginesCovered": 42,
+        "aircraftCovered": 21,
+        "base": "Paris CDG"
+      },
+      "documents": {
+        "sourcePdf": "PDF principal - Contrat signé 2024",
+        "summaryAi": "Résumé IA disponible",
+        "importantPages": [2, 7, 11]
+      },
+      "widgets": [
+        {
+          "id": "w-overview-001",
+          "name": "Vue d'ensemble",
+          "type": "fields",
+          "status": "Valid",
+          "lastStatusChange": "2026-02-03",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "scope": "Contrat complet",
+            "serviceLevel": "Support standard 24/7",
+            "sla": "Réponse sous 4h"
+          }
+        },
+        {
+          "id": "w-pricing-001",
+          "name": "Conditions tarifaires",
+          "type": "table",
+          "status": "Ready for validation",
+          "lastStatusChange": "2026-03-01",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "items": [
+              { "label": "Taux ingénierie", "value": "145 EUR/h" },
+              { "label": "Taux AOG", "value": "210 EUR/h" }
+            ]
+          }
+        },
+        {
+          "id": "w-summary-001",
+          "name": "Article synthétique",
+          "type": "article",
+          "status": "Valid",
+          "lastStatusChange": "2026-01-19",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "paragraphs": [
+              "Le contrat couvre le support en exploitation et l'assistance technique pour la flotte A320neo basée en Europe.",
+              "Les interventions critiques AOG sont priorisées avec une astreinte dédiée et un pilotage mensuel des indicateurs."
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Contrat de support A320neo - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Identification",
+            "content": [
+              "Contrat CTR-2024-001 entre Safran Aircraft Engines et Air France.",
+              "Objet : prestations de support long terme pour moteurs LEAP-1A."
+            ]
+          },
+          {
+            "heading": "Page 2 - Conditions clés",
+            "content": [
+              "Prestations couvertes : assistance technique, analyse shop visit, support AOG.",
+              "Durée ferme : 5 ans avec revue tarifaire annuelle."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2024-014",
+      "name": "RPFH Dreamliner Middle East",
+      "type": "RPFH",
+      "customerId": "CUST-002",
+      "region": "Middle East",
+      "status": "Active",
+      "startDate": "2024-06-01",
+      "endDate": "2030-05-31",
+      "globalValidationStatus": "Draft",
+      "managingTeam": {
+        "name": "Customer Team Doha",
+        "company": "Safran Aircraft Engines",
+        "contact": "Nadia Ben Salem",
+        "email": "nadia.bensalem@example.com",
+        "phone": "+974 4400 2200"
+      },
+      "financials": {
+        "currency": "USD",
+        "billingModel": "Rate per Flight Hour",
+        "estimatedAnnualValue": 4800000,
+        "rateRevision": "Tous les 24 mois"
+      },
+      "fleet": {
+        "program": "B787",
+        "enginesCovered": 64,
+        "aircraftCovered": 32,
+        "base": "Doha"
+      },
+      "documents": {
+        "sourcePdf": "Contrat cadre RPFH 2024",
+        "summaryAi": "Résumé IA en cours",
+        "importantPages": [3, 5, 18]
+      },
+      "widgets": [
+        {
+          "id": "w-overview-014",
+          "name": "Vue d'ensemble",
+          "type": "fields",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-12",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "scope": "Flotte Dreamliner long courrier",
+            "serviceLevel": "Premium support",
+            "sla": "Réponse sous 2h"
+          }
+        },
+        {
+          "id": "w-fleet-014",
+          "name": "Données flotte",
+          "type": "table",
+          "status": "Valid",
+          "lastStatusChange": "2026-02-17",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "items": [
+              { "label": "Utilisation moyenne", "value": "11.4 h/jour" },
+              { "label": "Hub principal", "value": "DOH" }
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Contrat RPFH Dreamliner - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Objet",
+            "content": [
+              "Couverture RPFH pour la flotte B787 opérée au départ de Doha.",
+              "Le contrat inclut assistance engineering et support en shop visit."
+            ]
+          },
+          {
+            "heading": "Page 2 - Modèle économique",
+            "content": [
+              "Facturation mensuelle au nombre d'heures de vol déclaré.",
+              "Clause de révision à 24 mois sur hypothèse de consommation."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2025-003",
+      "name": "GTA support régional Amériques",
+      "type": "GTA",
+      "customerId": "CUST-003",
+      "region": "Americas",
+      "status": "Active",
+      "startDate": "2025-02-15",
+      "endDate": "2027-02-14",
+      "globalValidationStatus": "Ready for validation",
+      "managingTeam": {
+        "name": "Americas Contract Office",
+        "company": "Safran Aircraft Engines",
+        "contact": "Michael Carter",
+        "email": "michael.carter@example.com",
+        "phone": "+1 404 555 0188"
+      },
+      "financials": {
+        "currency": "USD",
+        "billingModel": "Global Technical Assistance",
+        "estimatedAnnualValue": 2100000,
+        "rateRevision": "Révision semestrielle"
+      },
+      "fleet": {
+        "program": "A220",
+        "enginesCovered": 36,
+        "aircraftCovered": 18,
+        "base": "Atlanta"
+      },
+      "documents": {
+        "sourcePdf": "Annexes GTA 2025",
+        "summaryAi": "Résumé IA disponible",
+        "importantPages": [4, 9, 13]
+      },
+      "widgets": [
+        {
+          "id": "w-governance-003",
+          "name": "Gouvernance",
+          "type": "fields",
+          "status": "Ready for validation",
+          "lastStatusChange": "2026-03-10",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "reviewCadence": "Mensuelle",
+            "steeringCommittee": "Trimestriel",
+            "escalationPath": "Contract manager -> program director"
+          }
+        },
+        {
+          "id": "w-kpi-003",
+          "name": "KPI contractuels",
+          "type": "table",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-18",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "items": [
+              { "label": "Disponibilité cible", "value": "98.5 %" },
+              { "label": "Délai d'analyse", "value": "48 h" }
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Contrat GTA Amériques - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Périmètre",
+            "content": [
+              "Assistance technique globale sur le périmètre régional Amériques.",
+              "Coordination avec les équipes locales maintenance et engineering."
+            ]
+          },
+          {
+            "heading": "Page 2 - KPI",
+            "content": [
+              "Les KPI portent sur les temps de réponse, la disponibilité et la qualité de résolution.",
+              "Un comité de pilotage trimestriel consolide les résultats."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2023-022",
+      "name": "Licence analytics flotte APAC",
+      "type": "License",
+      "customerId": "CUST-004",
+      "region": "APAC",
+      "status": "Renewal due",
+      "startDate": "2023-09-01",
+      "endDate": "2026-08-31",
+      "globalValidationStatus": "Valid",
+      "managingTeam": {
+        "name": "Digital Solutions APAC",
+        "company": "Safran Aircraft Engines",
+        "contact": "Wei Lin",
+        "email": "wei.lin@example.com",
+        "phone": "+65 6123 4567"
+      },
+      "financials": {
+        "currency": "USD",
+        "billingModel": "Annual license",
+        "estimatedAnnualValue": 760000,
+        "rateRevision": "À renouvellement"
+      },
+      "fleet": {
+        "program": "A350",
+        "enginesCovered": 58,
+        "aircraftCovered": 29,
+        "base": "Singapore"
+      },
+      "documents": {
+        "sourcePdf": "Master License Agreement 2023",
+        "summaryAi": "Résumé IA disponible",
+        "importantPages": [1, 6, 12]
+      },
+      "widgets": [
+        {
+          "id": "w-license-022",
+          "name": "Droits de licence",
+          "type": "fields",
+          "status": "Valid",
+          "lastStatusChange": "2026-01-08",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Administration",
+          "data": {
+            "usersIncluded": "120",
+            "modules": "Fleet Analytics, Reliability Insights",
+            "hosting": "SaaS dédié"
+          }
+        },
+        {
+          "id": "w-renewal-022",
+          "name": "Préparation renouvellement",
+          "type": "article",
+          "status": "Pending for external data",
+          "lastStatusChange": "2026-03-05",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "paragraphs": [
+              "Le renouvellement dépend de la validation du périmètre utilisateur cible par le client.",
+              "Une proposition commerciale révisée doit être émise avant le 30 juin 2026."
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Licence analytics APAC - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Licence",
+            "content": [
+              "Le client dispose d'un droit d'accès annuel à la plateforme analytics.",
+              "Le service inclut maintenance corrective et support utilisateur."
+            ]
+          },
+          {
+            "heading": "Page 2 - Renouvellement",
+            "content": [
+              "Le contrat est reconductible sous réserve d'accord écrit.",
+              "Les volumes d'utilisateurs peuvent être ajustés à l'échéance."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2022-031",
+      "name": "Support moteurs legacy Afrique",
+      "type": "T&M",
+      "customerId": "CUST-005",
+      "region": "Africa",
+      "status": "Closed",
+      "startDate": "2022-04-01",
+      "endDate": "2025-03-31",
+      "globalValidationStatus": "Non applicable",
+      "managingTeam": {
+        "name": "South Europe & Africa Team",
+        "company": "Safran Aircraft Engines",
+        "contact": "Youssef El Idrissi",
+        "email": "youssef.elidrissi@example.com",
+        "phone": "+212 522 000 321"
+      },
+      "financials": {
+        "currency": "EUR",
+        "billingModel": "Time and Material",
+        "estimatedAnnualValue": 640000,
+        "rateRevision": "Aucune, contrat clos"
+      },
+      "fleet": {
+        "program": "B737NG",
+        "enginesCovered": 20,
+        "aircraftCovered": 10,
+        "base": "Casablanca"
+      },
+      "documents": {
+        "sourcePdf": "Contrat clos et avenants",
+        "summaryAi": "Résumé IA archivé",
+        "importantPages": [2, 8]
+      },
+      "widgets": [
+        {
+          "id": "w-closeout-031",
+          "name": "Clôture de contrat",
+          "type": "fields",
+          "status": "Valid",
+          "lastStatusChange": "2025-04-02",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Administration",
+          "data": {
+            "closeoutReason": "Fin de terme",
+            "handoverStatus": "Terminé",
+            "archiveLocation": "S3 / contracts/archive/2025"
+          }
+        },
+        {
+          "id": "w-lessons-031",
+          "name": "Retours d'expérience",
+          "type": "article",
+          "status": "Valid",
+          "lastStatusChange": "2025-04-15",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "paragraphs": [
+              "La consolidation des contacts opérationnels a amélioré les délais de traitement en fin de contrat.",
+              "La structuration des données dans le référentiel doit être anticipée dès le démarrage."
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Contrat legacy Afrique - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Historique",
+            "content": [
+              "Contrat de support T&M pour flotte legacy opérée depuis Casablanca.",
+              "Le contrat a pris fin au 31 mars 2025 sans extension."
+            ]
+          },
+          {
+            "heading": "Page 2 - Archivage",
+            "content": [
+              "Les pièces contractuelles et avenants sont archivés conformément aux règles internes.",
+              "Le référentiel conserve les métadonnées et les contacts clés."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2025-011",
+      "name": "Support CFM56 Europe centrale",
+      "type": "T&M",
+      "customerId": "CUST-006",
+      "region": "Europe",
+      "status": "Active",
+      "startDate": "2025-01-10",
+      "endDate": "2029-01-09",
+      "globalValidationStatus": "Valid",
+      "managingTeam": {
+        "name": "Central Europe Service Desk",
+        "company": "Safran Aircraft Engines",
+        "contact": "Jonas Keller",
+        "email": "jonas.keller@example.com",
+        "phone": "+49 69 5555 9911"
+      },
+      "financials": {
+        "currency": "EUR",
+        "billingModel": "Time and Material",
+        "estimatedAnnualValue": 1710000,
+        "rateRevision": "Annuelle"
+      },
+      "fleet": {
+        "program": "A320ceo",
+        "enginesCovered": 50,
+        "aircraftCovered": 25,
+        "base": "Frankfurt"
+      },
+      "documents": {
+        "sourcePdf": "Contrat support CFM56 2025",
+        "summaryAi": "Résumé IA disponible",
+        "importantPages": [2, 10, 16]
+      },
+      "widgets": [
+        {
+          "id": "w-response-011",
+          "name": "Réactivité support",
+          "type": "fields",
+          "status": "Valid",
+          "lastStatusChange": "2026-02-12",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "serviceDesk": "Couverture 6j/7",
+            "sla": "Réponse sous 6h",
+            "onSiteSupport": "Sur demande"
+          }
+        },
+        {
+          "id": "w-costs-011",
+          "name": "Postes de coûts",
+          "type": "table",
+          "status": "Ready for validation",
+          "lastStatusChange": "2026-03-03",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "items": [
+              { "label": "Taux expertise", "value": "160 EUR/h" },
+              { "label": "Forfait intervention", "value": "3 500 EUR" }
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Contrat CFM56 Europe centrale - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Services",
+            "content": [
+              "Contrat de support technique récurrent pour la flotte A320ceo.",
+              "L'accord prévoit des interventions remote et des missions ponctuelles sur site."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2025-019",
+      "name": "RPFH A380 premium UAE",
+      "type": "RPFH",
+      "customerId": "CUST-007",
+      "region": "Middle East",
+      "status": "Active",
+      "startDate": "2025-04-01",
+      "endDate": "2031-03-31",
+      "globalValidationStatus": "Ready for validation",
+      "managingTeam": {
+        "name": "Premium Fleet Desk Dubai",
+        "company": "Safran Aircraft Engines",
+        "contact": "Amina Al Falasi",
+        "email": "amina.alfalasi@example.com",
+        "phone": "+971 4 555 8877"
+      },
+      "financials": {
+        "currency": "USD",
+        "billingModel": "Rate per Flight Hour",
+        "estimatedAnnualValue": 5250000,
+        "rateRevision": "Tous les 18 mois"
+      },
+      "fleet": {
+        "program": "A380",
+        "enginesCovered": 92,
+        "aircraftCovered": 46,
+        "base": "Dubai"
+      },
+      "documents": {
+        "sourcePdf": "A380 RPFH master agreement",
+        "summaryAi": "Résumé IA en cours",
+        "importantPages": [6, 11, 23]
+      },
+      "widgets": [
+        {
+          "id": "w-availability-019",
+          "name": "Disponibilité moteurs",
+          "type": "fields",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-14",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "availabilityTarget": "99.1 %",
+            "reservePool": "4 moteurs",
+            "dispatchSupport": "24/7"
+          }
+        },
+        {
+          "id": "w-rate-019",
+          "name": "Structure tarifaire",
+          "type": "table",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-16",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "items": [
+              { "label": "Taux FH base", "value": "410 USD/FH" },
+              { "label": "Ajustement long-haul", "value": "+8 %" }
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "RPFH A380 premium - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Couverture",
+            "content": [
+              "Contrat RPFH premium couvrant l'exploitation A380 multi-hubs.",
+              "Le modèle inclut des clauses renforcées de disponibilité et de support dispatch."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2026-002",
+      "name": "GTA narrowbody Benelux",
+      "type": "GTA",
+      "customerId": "CUST-008",
+      "region": "Europe",
+      "status": "Draft",
+      "startDate": "2026-01-01",
+      "endDate": "2028-12-31",
+      "globalValidationStatus": "Draft",
+      "managingTeam": {
+        "name": "North Europe Field Support",
+        "company": "Safran Aircraft Engines",
+        "contact": "Sanne de Vries",
+        "email": "sanne.devries@example.com",
+        "phone": "+31 20 555 1040"
+      },
+      "financials": {
+        "currency": "EUR",
+        "billingModel": "Global Technical Assistance",
+        "estimatedAnnualValue": 1320000,
+        "rateRevision": "Annuelle"
+      },
+      "fleet": {
+        "program": "B737MAX",
+        "enginesCovered": 28,
+        "aircraftCovered": 14,
+        "base": "Amsterdam"
+      },
+      "documents": {
+        "sourcePdf": "Projet GTA Benelux",
+        "summaryAi": "Résumé IA brouillon",
+        "importantPages": [1, 4]
+      },
+      "widgets": [
+        {
+          "id": "w-ops-002",
+          "name": "Organisation opérationnelle",
+          "type": "fields",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-20",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "localCoordination": "Equipe Amsterdam",
+            "weeklyBridge": "Oui",
+            "incidentEscalation": "Niveau 1 à 3"
+          }
+        },
+        {
+          "id": "w-deliverables-002",
+          "name": "Livrables",
+          "type": "article",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-21",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "paragraphs": [
+              "Le dispositif GTA prévoit des revues hebdomadaires et un reporting mensuel de performance.",
+              "Les annexes de responsabilité locale restent à finaliser avec les équipes du client."
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "GTA Benelux - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Draft",
+            "content": [
+              "Le projet de contrat GTA est en cours de validation croisée.",
+              "La répartition des rôles entre entités reste à confirmer."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2026-007",
+      "name": "Licence maintenance analytics Japan",
+      "type": "License",
+      "customerId": "CUST-009",
+      "region": "APAC",
+      "status": "Active",
+      "startDate": "2026-02-01",
+      "endDate": "2029-01-31",
+      "globalValidationStatus": "Valid",
+      "managingTeam": {
+        "name": "Digital Products Tokyo",
+        "company": "Safran Aircraft Engines",
+        "contact": "Haruto Sato",
+        "email": "haruto.sato@example.com",
+        "phone": "+81 3 5555 8870"
+      },
+      "financials": {
+        "currency": "USD",
+        "billingModel": "Annual license",
+        "estimatedAnnualValue": 980000,
+        "rateRevision": "A l'anniversaire"
+      },
+      "fleet": {
+        "program": "B787",
+        "enginesCovered": 44,
+        "aircraftCovered": 22,
+        "base": "Tokyo"
+      },
+      "documents": {
+        "sourcePdf": "ANA Digital License 2026",
+        "summaryAi": "Résumé IA disponible",
+        "importantPages": [2, 9, 14]
+      },
+      "widgets": [
+        {
+          "id": "w-users-007",
+          "name": "Population utilisateurs",
+          "type": "fields",
+          "status": "Valid",
+          "lastStatusChange": "2026-03-02",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Administration",
+          "data": {
+            "licensedUsers": "180",
+            "viewerUsers": "420",
+            "sso": "Activé"
+          }
+        },
+        {
+          "id": "w-modules-007",
+          "name": "Modules activés",
+          "type": "table",
+          "status": "Valid",
+          "lastStatusChange": "2026-03-04",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "items": [
+              { "label": "Predictive Alerts", "value": "Oui" },
+              { "label": "Maintenance Cockpit", "value": "Oui" }
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Licence maintenance analytics Japan - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Usage",
+            "content": [
+              "La licence couvre les usages engineering, reliability et planning.",
+              "Le contrat inclut un support de niveau enterprise."
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CTR-2026-012",
+      "name": "Support LEAP Turquie",
+      "type": "T&M",
+      "customerId": "CUST-010",
+      "region": "Europe",
+      "status": "Active",
+      "startDate": "2026-03-01",
+      "endDate": "2030-02-28",
+      "globalValidationStatus": "Ready for validation",
+      "managingTeam": {
+        "name": "East Med Support Unit",
+        "company": "Safran Aircraft Engines",
+        "contact": "Ece Demir",
+        "email": "ece.demir@example.com",
+        "phone": "+90 212 555 4400"
+      },
+      "financials": {
+        "currency": "EUR",
+        "billingModel": "Time and Material",
+        "estimatedAnnualValue": 1540000,
+        "rateRevision": "Annuelle, plafonnée"
+      },
+      "fleet": {
+        "program": "A321neo",
+        "enginesCovered": 38,
+        "aircraftCovered": 19,
+        "base": "Istanbul"
+      },
+      "documents": {
+        "sourcePdf": "Contrat LEAP Turquie 2026",
+        "summaryAi": "Résumé IA disponible",
+        "importantPages": [3, 8, 15]
+      },
+      "widgets": [
+        {
+          "id": "w-base-012",
+          "name": "Base support",
+          "type": "fields",
+          "status": "Ready for validation",
+          "lastStatusChange": "2026-03-22",
+          "readAccess": "Lecture sans données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "supportWindow": "24/7",
+            "languageCoverage": "EN / TR",
+            "aogDesk": "Prioritaire"
+          }
+        },
+        {
+          "id": "w-commitments-012",
+          "name": "Engagements contractuels",
+          "type": "article",
+          "status": "Draft",
+          "lastStatusChange": "2026-03-23",
+          "readAccess": "Lecture avec données financières",
+          "editAccess": "Lecture et édition",
+          "data": {
+            "paragraphs": [
+              "Le contrat prévoit une montée en puissance progressive sur les deux premières années.",
+              "Les conditions d'intervention sur base secondaire doivent encore être validées."
+            ]
+          }
+        }
+      ],
+      "pdfSimulation": {
+        "title": "Contrat LEAP Turquie - Extrait",
+        "pages": [
+          {
+            "heading": "Page 1 - Mise en place",
+            "content": [
+              "Le support est organisé autour d'une cellule dédiée à Istanbul.",
+              "Les obligations AOG sont alignées sur les pratiques groupe."
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

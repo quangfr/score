@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contrats</title>
+    <style>
+      :root {
+        --bg: #eaf3ff;
+        --bg-strong: #d7e8ff;
+        --panel: rgba(255, 255, 255, 0.82);
+        --panel-strong: #ffffff;
+        --line: rgba(87, 130, 197, 0.22);
+        --line-strong: rgba(52, 99, 177, 0.45);
+        --text: #0f1f39;
+        --muted: #5b6f92;
+        --accent: #1f6feb;
+        --accent-strong: #175ac2;
+        --accent-soft: rgba(31, 111, 235, 0.12);
+        --ok: #157347;
+        --warn: #a16207;
+        --shadow: 0 22px 60px rgba(18, 62, 128, 0.12);
+        --preview-width: 520px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(31, 111, 235, 0.16), transparent 25%),
+          linear-gradient(135deg, #edf5ff 0%, #ddeafe 50%, #eef6ff 100%);
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 220px minmax(320px, 1fr) minmax(360px, var(--preview-width));
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 24px 18px;
+        background: linear-gradient(180deg, #0f2f62 0%, #123f84 100%);
+        color: #eef5ff;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .brand {
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .nav {
+        display: grid;
+        gap: 10px;
+      }
+
+      .nav-item {
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        font-weight: 600;
+      }
+
+      .nav-item.active {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.24);
+      }
+
+      .main {
+        padding: 20px;
+      }
+
+      .preview-sidebar {
+        position: relative;
+        padding: 20px 20px 20px 0;
+      }
+
+      .preview-resizer {
+        position: absolute;
+        top: 20px;
+        left: -10px;
+        width: 20px;
+        height: calc(100vh - 40px);
+        cursor: col-resize;
+        z-index: 3;
+      }
+
+      .panel,
+      .contract-card,
+      .preview-panel,
+      .console-panel,
+      .modal-body {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .panel,
+      .preview-panel,
+      .console-panel {
+        height: calc(100vh - 40px);
+        overflow: hidden;
+      }
+
+      .panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-head,
+      .preview-head,
+      .console-head,
+      .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-head h1,
+      .preview-head h2,
+      .console-head h2,
+      .modal-head h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .filters {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.8fr));
+        gap: 10px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--text);
+      }
+
+      .list {
+        display: grid;
+        gap: 12px;
+        padding: 16px 20px 20px;
+        overflow: auto;
+      }
+
+      .contract-card {
+        padding: 16px;
+        cursor: pointer;
+        transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+      }
+
+      .contract-card:hover,
+      .contract-card.active {
+        transform: translateY(-1px);
+        border-color: var(--line-strong);
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      .card-head,
+      .row,
+      .preview-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .contract-card h3,
+      .contract-card h4 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .subtle {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 8px;
+      }
+
+      .mini-grid {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .pill,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+      }
+
+      .pill {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+      }
+
+      .pill.status-valid {
+        background: rgba(21, 115, 71, 0.12);
+        color: var(--ok);
+      }
+
+      .pill.status-warning {
+        background: rgba(161, 98, 7, 0.12);
+        color: var(--warn);
+      }
+
+      .tag {
+        background: rgba(31, 111, 235, 0.08);
+        color: var(--accent-strong);
+      }
+
+      .preview-panel,
+      .console-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .preview-content,
+      .console-content {
+        padding: 18px 20px 20px;
+        overflow: auto;
+      }
+
+      .preview-content {
+        display: grid;
+        gap: 14px;
+      }
+
+      .contract-sheet {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 255, 0.98)),
+          repeating-linear-gradient(180deg, transparent 0, transparent 26px, rgba(68, 110, 180, 0.05) 26px, rgba(68, 110, 180, 0.05) 27px);
+        border: 1px solid rgba(68, 110, 180, 0.14);
+        border-radius: 20px;
+        padding: 22px;
+      }
+
+      .contract-sheet h3,
+      .contract-sheet h4,
+      .contract-sheet p {
+        margin: 0;
+      }
+
+      .contract-sheet h3 {
+        margin-bottom: 8px;
+        font-size: 1.15rem;
+      }
+
+      .contract-sheet h4 {
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+      }
+
+      .contract-sheet p {
+        line-height: 1.65;
+        margin-top: 10px;
+      }
+
+      .sheet-section {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px dashed rgba(68, 110, 180, 0.22);
+      }
+
+      .sheet-title-row,
+      .widget-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .sheet-title-row {
+        margin-bottom: 14px;
+      }
+
+      .key-values {
+        display: grid;
+        gap: 10px;
+      }
+
+      .key-value {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed rgba(68, 110, 180, 0.14);
+      }
+
+      .key-value span:first-child {
+        color: var(--muted);
+      }
+
+      .preview-subsection {
+        margin-top: 14px;
+      }
+
+      .preview-subsection h4 {
+        margin-bottom: 8px;
+      }
+
+      .widget-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .widget-card {
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(68, 110, 180, 0.16);
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .widget-meta {
+        display: grid;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .widget-data-list,
+      .widget-table,
+      .widget-paragraphs {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .widget-data-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .widget-data-row strong {
+        text-align: right;
+      }
+
+      .widget-paragraphs p {
+        margin: 0;
+      }
+
+      .customer-editor {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(68, 110, 180, 0.14);
+        background: rgba(31, 111, 235, 0.06);
+      }
+
+      .customer-editor label {
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+
+      .customer-editor-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+
+      .console-toolbar {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .console-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .console-route {
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(68, 110, 180, 0.16);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .console-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .endpoint-button {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .endpoint-button.active {
+        border-color: rgba(31, 111, 235, 0.38);
+        background: rgba(31, 111, 235, 0.12);
+        color: var(--accent-strong);
+      }
+
+      .icon-button,
+      .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 14px;
+        cursor: pointer;
+      }
+
+      .icon-button {
+        width: 42px;
+        height: 42px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+      }
+
+      .action-button {
+        padding: 11px 14px;
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .icon {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      pre {
+        margin: 0;
+        padding: 16px;
+        overflow: auto;
+        border-radius: 18px;
+        background: #081a37;
+        color: #e3efff;
+        font-size: 0.84rem;
+      }
+
+      .empty {
+        padding: 16px;
+        border-radius: 16px;
+        border: 1px dashed var(--line-strong);
+        color: var(--muted);
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(7, 21, 44, 0.6);
+        z-index: 10;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-body {
+        width: min(1200px, 100%);
+        height: min(92vh, 100%);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .modal-content {
+        padding: 20px;
+        overflow: auto;
+      }
+
+      @media (max-width: 1180px) {
+        .app-shell {
+          grid-template-columns: 200px 1fr;
+        }
+
+        .preview-resizer {
+          display: none;
+        }
+
+        .preview-sidebar {
+          grid-column: 1 / -1;
+          padding: 0 20px 20px;
+        }
+
+        .preview-panel {
+          height: auto;
+          max-height: 65vh;
+        }
+      }
+
+      @media (max-width: 860px) {
+        .app-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .main,
+        .preview-sidebar {
+          padding: 16px;
+        }
+
+        .filters {
+          grid-template-columns: 1fr;
+        }
+
+        .panel,
+        .preview-panel,
+        .console-panel {
+          height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">Contrathèque</div>
+        <nav class="nav">
+          <div class="nav-item active">Contrats</div>
+          <div class="nav-item">Console API</div>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <section id="contractsView" class="panel">
+          <div class="panel-head">
+            <h1>Contrats</h1>
+            <span id="contractsCount" class="subtle"></span>
+          </div>
+
+          <div class="filters">
+            <input id="searchInput" type="search" placeholder="Rechercher" />
+            <select id="statusFilter">
+              <option value="">Statut</option>
+            </select>
+            <select id="typeFilter">
+              <option value="">Type</option>
+            </select>
+          </div>
+
+          <div id="contractsList" class="list"></div>
+        </section>
+      </main>
+
+      <aside class="preview-sidebar">
+        <div id="previewResizer" class="preview-resizer" aria-hidden="true"></div>
+        <section class="preview-panel">
+          <div class="preview-head">
+            <h2>Prévisualisation</h2>
+            <button id="openPreviewModalButton" class="icon-button" type="button" aria-label="Ouvrir en plein écran">
+              <span data-lucide="fullscreen"></span>
+            </button>
+          </div>
+          <div id="contractPreview" class="preview-content"></div>
+        </section>
+
+        <section id="apiConsole" class="console-panel">
+          <div class="console-head">
+            <h2>Console API</h2>
+          </div>
+          <div class="console-content">
+            <div class="console-toolbar">
+              <div id="apiEndpointButtons" class="console-actions"></div>
+              <div id="apiRoute" class="console-route"></div>
+              <div class="console-actions">
+                <select id="apiContractSelect">
+                  <option value="">Contrat</option>
+                </select>
+              </div>
+              <div id="apiMeta" class="console-meta"></div>
+            </div>
+            <pre id="jsonPayload"></pre>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <div id="previewModal" class="modal" aria-hidden="true">
+      <div class="modal-body">
+        <div class="modal-head">
+          <h2>Prévisualisation</h2>
+          <button id="closePreviewModalButton" class="icon-button" type="button" aria-label="Fermer">
+            <span data-lucide="x"></span>
+          </button>
+        </div>
+        <div id="modalPreviewContent" class="modal-content"></div>
+      </div>
+    </div>
+
+    <script>
+      const state = {
+        customers: [],
+        contracts: [],
+        filteredContracts: [],
+        selectedContractId: null,
+        apiEndpoint: "list",
+      };
+
+      const elements = {
+        searchInput: document.getElementById("searchInput"),
+        statusFilter: document.getElementById("statusFilter"),
+        typeFilter: document.getElementById("typeFilter"),
+        contractsCount: document.getElementById("contractsCount"),
+        contractsList: document.getElementById("contractsList"),
+        contractPreview: document.getElementById("contractPreview"),
+        jsonPayload: document.getElementById("jsonPayload"),
+        apiEndpointButtons: document.getElementById("apiEndpointButtons"),
+        apiContractSelect: document.getElementById("apiContractSelect"),
+        apiRoute: document.getElementById("apiRoute"),
+        apiMeta: document.getElementById("apiMeta"),
+        openPreviewModalButton: document.getElementById("openPreviewModalButton"),
+        closePreviewModalButton: document.getElementById("closePreviewModalButton"),
+        previewModal: document.getElementById("previewModal"),
+        modalPreviewContent: document.getElementById("modalPreviewContent"),
+        previewResizer: document.getElementById("previewResizer"),
+      };
+
+      const lucideIcons = {
+        fullscreen: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+            <path d="M16 3h3a2 2 0 0 1 2 2v3"></path>
+            <path d="M8 21H5a2 2 0 0 1-2-2v-3"></path>
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+          </svg>
+        `,
+        x: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        `,
+      };
+
+      const formatDate = (value) =>
+        new Intl.DateTimeFormat("fr-FR", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }).format(new Date(value));
+
+      const formatCurrency = (value, currency) =>
+        new Intl.NumberFormat("fr-FR", {
+          style: "currency",
+          currency,
+          maximumFractionDigits: 0,
+        }).format(value);
+
+      const escapeHtml = (value) =>
+        String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+
+      function renderIcons(root = document) {
+        root.querySelectorAll("[data-lucide]").forEach((node) => {
+          const iconName = node.dataset.lucide;
+          node.innerHTML = lucideIcons[iconName] || "";
+        });
+      }
+
+      function widgetStatusClass(status) {
+        return ["Valid", "Closed"].includes(status) ? "status-valid" : "status-warning";
+      }
+
+      function buildOptions(select, values) {
+        const baseLabel = select === elements.statusFilter ? "Statut" : "Type";
+        select.innerHTML = `<option value="">${baseLabel}</option>${values
+          .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`)
+          .join("")}`;
+      }
+
+      function buildContractSelectOptions() {
+        elements.apiContractSelect.innerHTML = `
+          <option value="">Contrat sélectionné</option>
+          ${state.contracts
+            .map(
+              (contract) => `
+                <option value="${escapeHtml(contract.id)}">${escapeHtml(contract.id)} · ${escapeHtml(contract.name)}</option>
+              `
+            )
+          .join("")}
+        `;
+      }
+
+      function getCustomerById(customerId) {
+        return state.customers.find((customer) => customer.id === customerId) || null;
+      }
+
+      function hydrateContract(contract) {
+        if (!contract) {
+          return null;
+        }
+
+        const customer = getCustomerById(contract.customerId) || {
+          id: "",
+          name: "Client inconnu",
+          accountCode: "",
+          country: "",
+        };
+
+        return {
+          ...contract,
+          customer,
+        };
+      }
+
+      function getSelectedContract() {
+        const contract = state.contracts.find((item) => item.id === state.selectedContractId) || state.filteredContracts[0] || null;
+        return hydrateContract(contract);
+      }
+
+      function getApiContract() {
+        const contract = state.contracts.find((item) => item.id === state.selectedContractId) || state.contracts[0] || null;
+        return hydrateContract(contract);
+      }
+
+      function formatLabel(value) {
+        return String(value)
+          .replaceAll(/([a-z0-9])([A-Z])/g, "$1 $2")
+          .replaceAll("_", " ")
+          .replaceAll("-", " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(/^./, (char) => char.toUpperCase());
+      }
+
+      function renderKeyValueRows(entries) {
+        return entries
+          .map(
+            ([label, value]) => `
+              <div class="key-value">
+                <span>${escapeHtml(label)}</span>
+                <strong>${escapeHtml(value)}</strong>
+              </div>
+            `
+          )
+          .join("");
+      }
+
+      function renderWidgetData(widget) {
+        if (!widget?.data) {
+          return "";
+        }
+
+        if (widget.type === "table") {
+          const items = Array.isArray(widget.data.items) ? widget.data.items : [];
+          return `
+            <div class="widget-table">
+              ${items
+                .map(
+                  (item) => `
+                    <div class="key-value">
+                      <span>${escapeHtml(item.label)}</span>
+                      <strong>${escapeHtml(item.value)}</strong>
+                    </div>
+                  `
+                )
+                .join("")}
+            </div>
+          `;
+        }
+
+        if (widget.type === "article") {
+          const paragraphs = Array.isArray(widget.data.paragraphs) ? widget.data.paragraphs : [];
+          return `
+            <div class="widget-paragraphs">
+              ${paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+            </div>
+          `;
+        }
+
+        return `
+          <div class="widget-data-list">
+            ${Object.entries(widget.data)
+              .map(
+                ([key, value]) => `
+                  <div class="widget-data-row">
+                    <span class="subtle">${escapeHtml(formatLabel(key))}</span>
+                    <strong>${escapeHtml(value)}</strong>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function buildPreviewHtml(contract) {
+        if (!contract) {
+          return `<div class="empty">Aucun contrat</div>`;
+        }
+
+        const pages = contract.pdfSimulation?.pages || [];
+        const widgets = contract.widgets || [];
+        const metadataEntries = [
+          ["Client", contract.customer.name],
+          ["Code compte", contract.customer.accountCode],
+          ["Pays", contract.customer.country],
+          ["Région", contract.region],
+          ["Période", `${formatDate(contract.startDate)} - ${formatDate(contract.endDate)}`],
+          ["Statut contrat", contract.status],
+          ["Équipe", contract.managingTeam.name],
+          ["Contact", contract.managingTeam.contact],
+          ["Email", contract.managingTeam.email],
+          ["Téléphone", contract.managingTeam.phone],
+          ["Société", contract.managingTeam.company],
+        ];
+        const financialEntries = [
+          ["Valeur estimée", formatCurrency(contract.financials.estimatedAnnualValue, contract.financials.currency)],
+          ["Devise", contract.financials.currency],
+          ["Modèle de facturation", contract.financials.billingModel],
+          ["Révision tarifaire", contract.financials.rateRevision],
+        ];
+        const fleetEntries = [
+          ["Programme", contract.fleet.program],
+          ["Moteurs couverts", String(contract.fleet.enginesCovered)],
+          ["Avions couverts", String(contract.fleet.aircraftCovered)],
+          ["Base", contract.fleet.base],
+        ];
+        const documentEntries = [
+          ["PDF source", contract.documents.sourcePdf],
+          ["Résumé IA", contract.documents.summaryAi],
+          ["Pages importantes", (contract.documents.importantPages || []).join(", ")],
+        ];
+
+        return `
+          <article class="contract-sheet">
+            <div class="sheet-title-row">
+              <div class="stack">
+                <div class="subtle">${escapeHtml(contract.id)} · ${escapeHtml(contract.type)}</div>
+                <h3>${escapeHtml(contract.name)}</h3>
+              </div>
+              <span class="pill ${widgetStatusClass(contract.globalValidationStatus)}">${escapeHtml(contract.globalValidationStatus)}</span>
+            </div>
+
+            <div class="preview-meta">
+              <div class="subtle">Prévisualisation du contrat et de tous ses widgets</div>
+              <span class="tag">${widgets.length} widget${widgets.length > 1 ? "s" : ""}</span>
+            </div>
+
+            <div class="sheet-section">
+              <div class="customer-editor">
+                <label for="customerSearchInput">Client du contrat</label>
+                <div class="customer-editor-row">
+                  <input
+                    id="customerSearchInput"
+                    type="search"
+                    list="customersList"
+                    value="${escapeHtml(contract.customer.name)}"
+                    placeholder="Rechercher un client"
+                  />
+                  <button id="applyCustomerChangeButton" class="action-button" type="button">Mettre à jour</button>
+                </div>
+                <datalist id="customersList">
+                  ${state.customers
+                    .map(
+                      (customer) => `
+                        <option value="${escapeHtml(customer.name)}">${escapeHtml(customer.accountCode)} · ${escapeHtml(customer.country)}</option>
+                      `
+                    )
+                    .join("")}
+                </datalist>
+                <div class="subtle">Table clients: ${state.customers.length} entrées référencées dans le dataset.</div>
+              </div>
+            </div>
+
+            <div class="sheet-section">
+              <div class="key-values">
+                ${renderKeyValueRows(metadataEntries)}
+              </div>
+            </div>
+
+            <div class="sheet-section">
+              <h4>Finance</h4>
+              <div class="key-values">
+                ${renderKeyValueRows(financialEntries)}
+              </div>
+            </div>
+
+            <div class="sheet-section">
+              <h4>Flotte</h4>
+              <div class="key-values">
+                ${renderKeyValueRows(fleetEntries)}
+              </div>
+            </div>
+
+            <div class="sheet-section">
+              <h4>Documents</h4>
+              <div class="key-values">
+                ${renderKeyValueRows(documentEntries)}
+              </div>
+            </div>
+
+            <div class="sheet-section">
+              <h4>Widgets du contrat</h4>
+              <div class="widget-list">
+                ${widgets
+                  .map(
+                    (widget) => `
+                      <article class="widget-card">
+                        <div class="widget-head">
+                          <div class="stack">
+                            <h4>${escapeHtml(widget.name)}</h4>
+                            <div class="subtle">${escapeHtml(widget.id)} · ${escapeHtml(widget.type)}</div>
+                          </div>
+                          <span class="pill ${widgetStatusClass(widget.status)}">${escapeHtml(widget.status)}</span>
+                        </div>
+
+                        <div class="widget-meta">
+                          <div class="row"><span class="subtle">Dernier changement</span><strong>${escapeHtml(formatDate(widget.lastStatusChange))}</strong></div>
+                          <div class="row"><span class="subtle">Accès lecture</span><strong>${escapeHtml(widget.readAccess)}</strong></div>
+                          <div class="row"><span class="subtle">Accès édition</span><strong>${escapeHtml(widget.editAccess)}</strong></div>
+                        </div>
+
+                        ${renderWidgetData(widget)}
+                      </article>
+                    `
+                  )
+                  .join("")}
+              </div>
+            </div>
+
+            ${
+              pages.length
+                ? `
+                  <div class="sheet-section">
+                    <h4>Extraits PDF</h4>
+                    ${pages
+                      .map(
+                        (page) => `
+                          <div class="preview-subsection">
+                            <h4>${escapeHtml(page.heading)}</h4>
+                            ${page.content.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+                          </div>
+                        `
+                      )
+                      .join("")}
+                  </div>
+                `
+                : ""
+            }
+          </article>
+        `;
+      }
+
+      function bindPreviewResize() {
+        const storageKey = "previewSidebarWidth";
+        const minWidth = 360;
+        const maxWidth = 760;
+
+        const applyWidth = (width) => {
+          const nextWidth = Math.min(maxWidth, Math.max(minWidth, width));
+          document.documentElement.style.setProperty("--preview-width", `${nextWidth}px`);
+          localStorage.setItem(storageKey, String(nextWidth));
+        };
+
+        const savedWidth = Number(localStorage.getItem(storageKey));
+        if (savedWidth) {
+          applyWidth(savedWidth);
+        }
+
+        let isResizing = false;
+
+        const stopResize = () => {
+          isResizing = false;
+          document.body.style.userSelect = "";
+          document.body.style.cursor = "";
+        };
+
+        const onPointerMove = (event) => {
+          if (!isResizing || window.innerWidth <= 1180) {
+            return;
+          }
+
+          applyWidth(window.innerWidth - event.clientX);
+        };
+
+        elements.previewResizer.addEventListener("pointerdown", (event) => {
+          if (window.innerWidth <= 1180) {
+            return;
+          }
+
+          isResizing = true;
+          document.body.style.userSelect = "none";
+          document.body.style.cursor = "col-resize";
+          elements.previewResizer.setPointerCapture(event.pointerId);
+        });
+
+        elements.previewResizer.addEventListener("pointerup", stopResize);
+        elements.previewResizer.addEventListener("lostpointercapture", stopResize);
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", stopResize);
+      }
+
+      function buildApiPayload() {
+        const selectedContract = getApiContract();
+
+        if (state.apiEndpoint === "detail") {
+          if (!selectedContract) {
+            return {
+              route: "GET /api/contracts/:id",
+              meta: ["404 Not Found", "Aucun contrat sélectionné"],
+              payload: { error: "Contract not found" },
+            };
+          }
+
+          return {
+            route: `GET /api/contracts/${selectedContract.id}`,
+            meta: ["200 OK", "Content-Type: application/json", "Export one contract"],
+            payload: {
+              exportVersion: "1.0",
+              exportedAt: new Date().toISOString(),
+              route: `/api/contracts/${selectedContract.id}`,
+              contract: selectedContract,
+            },
+          };
+        }
+
+        if (state.apiEndpoint === "customers") {
+          return {
+            route: "GET /api/customers",
+            meta: ["200 OK", "Content-Type: application/json", "Export customers table"],
+            payload: {
+              exportVersion: "1.0",
+              exportedAt: new Date().toISOString(),
+              route: "/api/customers",
+              count: state.customers.length,
+              customers: state.customers,
+            },
+          };
+        }
+
+        if (state.apiEndpoint === "dataset") {
+          return {
+            route: "GET /api/export/data.json",
+            meta: ["200 OK", "Content-Type: application/json", "Export full dataset"],
+            payload: {
+              customers: state.customers,
+              contracts: state.contracts,
+            },
+          };
+        }
+
+        return {
+          route: "GET /api/contracts",
+          meta: ["200 OK", "Content-Type: application/json", "Export contracts list"],
+          payload: {
+            exportVersion: "1.0",
+            exportedAt: new Date().toISOString(),
+            route: "/api/contracts",
+            count: state.contracts.length,
+            contracts: state.contracts.map((contract) => {
+              const hydratedContract = hydrateContract(contract);
+              return {
+              id: contract.id,
+              name: contract.name,
+              type: contract.type,
+              status: contract.status,
+              globalValidationStatus: contract.globalValidationStatus,
+              customer: hydratedContract.customer,
+              region: contract.region,
+              startDate: contract.startDate,
+              endDate: contract.endDate,
+              };
+            }),
+          },
+        };
+      }
+
+      function renderApiEndpointButtons() {
+        const endpoints = [
+          { id: "list", label: "List contracts" },
+          { id: "detail", label: "Get one contract" },
+          { id: "customers", label: "List customers" },
+          { id: "dataset", label: "Full data.json" },
+        ];
+
+        elements.apiEndpointButtons.innerHTML = endpoints
+          .map(
+            (endpoint) => `
+              <button
+                class="endpoint-button ${endpoint.id === state.apiEndpoint ? "active" : ""}"
+                type="button"
+                data-api-endpoint="${endpoint.id}"
+              >
+                ${escapeHtml(endpoint.label)}
+              </button>
+            `
+          )
+          .join("");
+
+        elements.apiEndpointButtons.querySelectorAll("[data-api-endpoint]").forEach((node) => {
+          node.addEventListener("click", () => {
+            state.apiEndpoint = node.dataset.apiEndpoint;
+            renderApiConsole();
+          });
+        });
+      }
+
+      function updateSelectedContractCustomer(customerName) {
+        const nextCustomer = state.customers.find((customer) => customer.name.toLowerCase() === customerName.trim().toLowerCase());
+        const contract = state.contracts.find((item) => item.id === state.selectedContractId);
+
+        if (!contract || !nextCustomer) {
+          return false;
+        }
+
+        contract.customerId = nextCustomer.id;
+        return true;
+      }
+
+      function bindPreviewCustomerEditor() {
+        const searchInput = elements.contractPreview.querySelector("#customerSearchInput");
+        const applyButton = elements.contractPreview.querySelector("#applyCustomerChangeButton");
+
+        if (!searchInput || !applyButton) {
+          return;
+        }
+
+        const applyChange = () => {
+          if (updateSelectedContractCustomer(searchInput.value)) {
+            render();
+            return;
+          }
+
+          searchInput.setCustomValidity("Client introuvable dans la table customers.");
+          searchInput.reportValidity();
+          setTimeout(() => searchInput.setCustomValidity(""), 0);
+        };
+
+        applyButton.addEventListener("click", applyChange);
+        searchInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            applyChange();
+          }
+        });
+      }
+
+      function renderContractsList() {
+        const contracts = state.filteredContracts;
+        elements.contractsCount.textContent = `${contracts.length}`;
+
+        if (!contracts.length) {
+          elements.contractsList.innerHTML = `<div class="empty">Aucun résultat</div>`;
+          return;
+        }
+
+        elements.contractsList.innerHTML = contracts
+          .map((contract) => {
+            const hydratedContract = hydrateContract(contract);
+            const isActive = contract.id === state.selectedContractId ? "active" : "";
+            return `
+              <article class="contract-card ${isActive}" data-contract-id="${escapeHtml(contract.id)}">
+                <div class="card-head">
+                  <div class="stack">
+                    <h3>${escapeHtml(hydratedContract.id)}</h3>
+                    <div class="subtle">${escapeHtml(hydratedContract.name)}</div>
+                  </div>
+                  <span class="pill ${widgetStatusClass(hydratedContract.globalValidationStatus)}">${escapeHtml(hydratedContract.globalValidationStatus)}</span>
+                </div>
+                <div class="mini-grid">
+                  <div class="row"><span class="subtle">${escapeHtml(hydratedContract.customer.name)}</span><span class="tag">${escapeHtml(hydratedContract.type)}</span></div>
+                  <div class="row"><span class="subtle">${escapeHtml(hydratedContract.region)}</span><span class="subtle">${escapeHtml(formatDate(hydratedContract.startDate))}</span></div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        elements.contractsList.querySelectorAll("[data-contract-id]").forEach((node) => {
+          node.addEventListener("click", () => {
+            state.selectedContractId = node.dataset.contractId;
+            render();
+          });
+        });
+      }
+
+      function renderPreview() {
+        const contract = getSelectedContract();
+        const previewHtml = buildPreviewHtml(contract);
+        elements.contractPreview.innerHTML = previewHtml;
+        elements.modalPreviewContent.innerHTML = previewHtml;
+        bindPreviewCustomerEditor();
+      }
+
+      function renderApiConsole() {
+        renderApiEndpointButtons();
+        elements.apiContractSelect.value = state.selectedContractId || "";
+
+        const apiState = buildApiPayload();
+        elements.apiRoute.textContent = apiState.route;
+        elements.apiMeta.innerHTML = apiState.meta.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join("");
+        elements.jsonPayload.textContent = JSON.stringify(apiState.payload, null, 2);
+      }
+
+      function applyFilters() {
+        const search = elements.searchInput.value.trim().toLowerCase();
+        const status = elements.statusFilter.value;
+        const type = elements.typeFilter.value;
+
+        state.filteredContracts = state.contracts.filter((contract) => {
+          const hydratedContract = hydrateContract(contract);
+          const searchable = [
+            hydratedContract.id,
+            hydratedContract.name,
+            hydratedContract.customer.name,
+            hydratedContract.customer.accountCode,
+            hydratedContract.type,
+            hydratedContract.region,
+            hydratedContract.managingTeam.name,
+          ]
+            .join(" ")
+            .toLowerCase();
+
+          const matchesSearch = !search || searchable.includes(search);
+          const matchesStatus = !status || hydratedContract.status === status;
+          const matchesType = !type || hydratedContract.type === type;
+          return matchesSearch && matchesStatus && matchesType;
+        });
+
+        if (!state.filteredContracts.some((contract) => contract.id === state.selectedContractId)) {
+          state.selectedContractId = state.filteredContracts[0]?.id || null;
+        }
+      }
+
+      function openPreviewModal() {
+        elements.previewModal.classList.add("open");
+        elements.previewModal.setAttribute("aria-hidden", "false");
+      }
+
+      function closePreviewModal() {
+        elements.previewModal.classList.remove("open");
+        elements.previewModal.setAttribute("aria-hidden", "true");
+      }
+
+      function bindStaticEvents() {
+        elements.searchInput.addEventListener("input", render);
+        elements.statusFilter.addEventListener("change", render);
+        elements.typeFilter.addEventListener("change", render);
+        elements.apiContractSelect.addEventListener("change", () => {
+          state.selectedContractId = elements.apiContractSelect.value || state.contracts[0]?.id || null;
+          render();
+        });
+        elements.openPreviewModalButton.addEventListener("click", openPreviewModal);
+        elements.closePreviewModalButton.addEventListener("click", closePreviewModal);
+        elements.previewModal.addEventListener("click", (event) => {
+          if (event.target === elements.previewModal) {
+            closePreviewModal();
+          }
+        });
+        window.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closePreviewModal();
+          }
+        });
+      }
+
+      function render() {
+        applyFilters();
+        renderContractsList();
+        renderPreview();
+        renderApiConsole();
+        renderIcons();
+      }
+
+      async function init() {
+        try {
+          const response = await fetch("./data.json");
+          const payload = await response.json();
+          state.customers = payload.customers || [];
+          state.contracts = payload.contracts || [];
+          state.filteredContracts = [...state.contracts];
+          state.selectedContractId = state.contracts[0]?.id || null;
+
+          buildOptions(elements.statusFilter, [...new Set(state.contracts.map((contract) => contract.status))]);
+          buildOptions(elements.typeFilter, [...new Set(state.contracts.map((contract) => contract.type))]);
+          buildContractSelectOptions();
+
+          bindStaticEvents();
+          bindPreviewResize();
+          render();
+        } catch (error) {
+          elements.contractsList.innerHTML = `<div class="empty">Chargement impossible</div>`;
+          console.error(error);
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>
