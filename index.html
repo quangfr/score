@@ -70,12 +70,21 @@
         gap: 10px;
       }
 
+      .nav-group-label {
+        margin-top: 6px;
+        font-size: 0.76rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(238, 245, 255, 0.72);
+      }
+
       .nav-item {
         padding: 12px 14px;
         border-radius: 14px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.06);
         font-weight: 600;
+        cursor: pointer;
       }
 
       .nav-item.active {
@@ -124,6 +133,10 @@
       .panel {
         display: flex;
         flex-direction: column;
+      }
+
+      .hidden {
+        display: none !important;
       }
 
       .panel-head,
@@ -481,6 +494,122 @@
         font-size: 0.84rem;
       }
 
+      .docs-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .docs-content {
+        padding: 22px 24px 28px;
+        overflow: auto;
+      }
+
+      .docs-shell {
+        max-width: 980px;
+        display: grid;
+        gap: 24px;
+      }
+
+      .docs-prose {
+        display: grid;
+        gap: 18px;
+        line-height: 1.7;
+      }
+
+      .docs-prose h1,
+      .docs-prose h2,
+      .docs-prose h3,
+      .docs-prose h4,
+      .docs-prose p,
+      .docs-prose ul,
+      .docs-prose ol,
+      .docs-prose table,
+      .docs-prose pre,
+      .docs-prose blockquote {
+        margin: 0;
+      }
+
+      .docs-prose h1 {
+        font-size: 1.9rem;
+      }
+
+      .docs-prose h2 {
+        margin-top: 8px;
+        padding-top: 18px;
+        font-size: 1.3rem;
+        border-top: 1px solid rgba(68, 110, 180, 0.14);
+      }
+
+      .docs-prose h3 {
+        font-size: 1.05rem;
+      }
+
+      .docs-prose ul,
+      .docs-prose ol {
+        padding-left: 20px;
+      }
+
+      .docs-prose li + li {
+        margin-top: 6px;
+      }
+
+      .docs-prose a {
+        color: var(--accent-strong);
+      }
+
+      .docs-prose code:not(pre code) {
+        padding: 0.15rem 0.42rem;
+        border-radius: 8px;
+        background: rgba(31, 111, 235, 0.08);
+        color: var(--accent-strong);
+        font-size: 0.92em;
+      }
+
+      .docs-prose table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 18px;
+        border: 1px solid rgba(68, 110, 180, 0.16);
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .docs-prose th,
+      .docs-prose td {
+        padding: 12px 14px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid rgba(68, 110, 180, 0.12);
+      }
+
+      .docs-prose th {
+        background: rgba(31, 111, 235, 0.08);
+      }
+
+      .docs-prose blockquote {
+        padding: 14px 16px;
+        border-left: 4px solid rgba(31, 111, 235, 0.4);
+        background: rgba(31, 111, 235, 0.06);
+        border-radius: 0 14px 14px 0;
+        color: var(--muted);
+      }
+
+      .docs-card {
+        padding: 18px 20px;
+        border-radius: 22px;
+        border: 1px solid rgba(68, 110, 180, 0.14);
+        background: rgba(255, 255, 255, 0.76);
+        box-shadow: 0 14px 36px rgba(18, 62, 128, 0.08);
+      }
+
+      .mermaid-card {
+        overflow: auto;
+      }
+
+      .mermaid-card .mermaid {
+        min-width: 680px;
+      }
+
       .empty {
         padding: 16px;
         border-radius: 16px;
@@ -568,8 +697,11 @@
       <aside class="sidebar">
         <div class="brand">Contrathèque</div>
         <nav class="nav">
-          <div class="nav-item active">Contrats</div>
-          <div class="nav-item">Console API</div>
+          <div class="nav-group-label">Navigation</div>
+          <button class="nav-item active" type="button" data-view="contracts">Contrats</button>
+          <button class="nav-item" type="button" data-view="docs">Docs</button>
+          <div class="nav-group-label">Outils</div>
+          <button class="nav-item" type="button" data-view="api">Console API</button>
         </nav>
       </aside>
 
@@ -592,11 +724,21 @@
 
           <div id="contractsList" class="list"></div>
         </section>
+
+        <section id="docsView" class="panel docs-panel hidden">
+          <div class="panel-head">
+            <h1>Docs</h1>
+            <span class="subtle">Documentation technique, fonctionnelle et architecture de données</span>
+          </div>
+          <div class="docs-content">
+            <div id="docsContent" class="docs-shell docs-prose"></div>
+          </div>
+        </section>
       </main>
 
-      <aside class="preview-sidebar">
+      <aside id="previewSidebar" class="preview-sidebar">
         <div id="previewResizer" class="preview-resizer" aria-hidden="true"></div>
-        <section class="preview-panel">
+        <section id="previewPanel" class="preview-panel">
           <div class="preview-head">
             <h2>Prévisualisation</h2>
             <button id="openPreviewModalButton" class="icon-button" type="button" aria-label="Ouvrir en plein écran">
@@ -606,7 +748,7 @@
           <div id="contractPreview" class="preview-content"></div>
         </section>
 
-        <section id="apiConsole" class="console-panel">
+        <section id="apiConsole" class="console-panel hidden">
           <div class="console-head">
             <h2>Console API</h2>
           </div>
@@ -639,16 +781,29 @@
       </div>
     </div>
 
-    <script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "neutral",
+        securityLevel: "loose",
+      });
+
       const state = {
         customers: [],
         contracts: [],
         filteredContracts: [],
         selectedContractId: null,
         apiEndpoint: "list",
+        activeView: "contracts",
+        docsMarkdown: "",
       };
 
       const elements = {
+        navItems: [...document.querySelectorAll("[data-view]")],
+        contractsView: document.getElementById("contractsView"),
+        docsView: document.getElementById("docsView"),
         searchInput: document.getElementById("searchInput"),
         statusFilter: document.getElementById("statusFilter"),
         typeFilter: document.getElementById("typeFilter"),
@@ -660,11 +815,15 @@
         apiContractSelect: document.getElementById("apiContractSelect"),
         apiRoute: document.getElementById("apiRoute"),
         apiMeta: document.getElementById("apiMeta"),
+        apiConsole: document.getElementById("apiConsole"),
         openPreviewModalButton: document.getElementById("openPreviewModalButton"),
         closePreviewModalButton: document.getElementById("closePreviewModalButton"),
         previewModal: document.getElementById("previewModal"),
         modalPreviewContent: document.getElementById("modalPreviewContent"),
         previewResizer: document.getElementById("previewResizer"),
+        previewSidebar: document.getElementById("previewSidebar"),
+        previewPanel: document.getElementById("previewPanel"),
+        docsContent: document.getElementById("docsContent"),
       };
 
       const lucideIcons = {
@@ -705,6 +864,11 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#39;");
+
+      const inlineMarkdown = (value) =>
+        escapeHtml(value)
+          .replace(/`([^`]+)`/g, "<code>$1</code>")
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
 
       function renderIcons(root = document) {
         root.querySelectorAll("[data-lucide]").forEach((node) => {
@@ -1249,6 +1413,199 @@
         elements.jsonPayload.textContent = JSON.stringify(apiState.payload, null, 2);
       }
 
+      function isTableLine(line) {
+        return /^\|(.+)\|$/.test(line.trim());
+      }
+
+      function parseTable(lines, startIndex) {
+        const rows = [];
+        let index = startIndex;
+
+        while (index < lines.length && isTableLine(lines[index])) {
+          rows.push(
+            lines[index]
+              .trim()
+              .slice(1, -1)
+              .split("|")
+              .map((cell) => cell.trim())
+          );
+          index += 1;
+        }
+
+        if (rows.length < 2 || !rows[1].every((cell) => /^:?-{3,}:?$/.test(cell))) {
+          return null;
+        }
+
+        const headers = rows[0];
+        const bodyRows = rows.slice(2);
+
+        return {
+          nextIndex: index,
+          html: `
+            <div class="docs-card">
+              <table>
+                <thead>
+                  <tr>${headers.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join("")}</tr>
+                </thead>
+                <tbody>
+                  ${bodyRows
+                    .map((row) => `<tr>${row.map((cell) => `<td>${inlineMarkdown(cell)}</td>`).join("")}</tr>`)
+                    .join("")}
+                </tbody>
+              </table>
+            </div>
+          `,
+        };
+      }
+
+      function markdownToHtml(markdown) {
+        const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+        const html = [];
+        let index = 0;
+
+        while (index < lines.length) {
+          const trimmed = lines[index].trim();
+
+          if (!trimmed) {
+            index += 1;
+            continue;
+          }
+
+          if (trimmed.startsWith("```")) {
+            const language = trimmed.slice(3).trim();
+            const codeLines = [];
+            index += 1;
+
+            while (index < lines.length && !lines[index].trim().startsWith("```")) {
+              codeLines.push(lines[index]);
+              index += 1;
+            }
+
+            if (language === "mermaid") {
+              html.push(`
+                <div class="docs-card mermaid-card">
+                  <div class="mermaid">${escapeHtml(codeLines.join("\n"))}</div>
+                </div>
+              `);
+            } else {
+              html.push(`
+                <div class="docs-card">
+                  <pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>
+                </div>
+              `);
+            }
+
+            index += 1;
+            continue;
+          }
+
+          const table = parseTable(lines, index);
+          if (table) {
+            html.push(table.html);
+            index = table.nextIndex;
+            continue;
+          }
+
+          if (/^#{1,6}\s/.test(trimmed)) {
+            const level = trimmed.match(/^#+/)[0].length;
+            html.push(`<h${level}>${inlineMarkdown(trimmed.replace(/^#{1,6}\s/, ""))}</h${level}>`);
+            index += 1;
+            continue;
+          }
+
+          if (trimmed.startsWith(">")) {
+            const quoteLines = [];
+            while (index < lines.length && lines[index].trim().startsWith(">")) {
+              quoteLines.push(lines[index].trim().replace(/^>\s?/, ""));
+              index += 1;
+            }
+            html.push(`<blockquote>${quoteLines.map((item) => inlineMarkdown(item)).join("<br />")}</blockquote>`);
+            continue;
+          }
+
+          if (/^[-*]\s+/.test(trimmed)) {
+            const items = [];
+            while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+              items.push(lines[index].trim().replace(/^[-*]\s+/, ""));
+              index += 1;
+            }
+            html.push(`<div class="docs-card"><ul>${items.map((item) => `<li>${inlineMarkdown(item)}</li>`).join("")}</ul></div>`);
+            continue;
+          }
+
+          if (/^\d+\.\s+/.test(trimmed)) {
+            const items = [];
+            while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+              items.push(lines[index].trim().replace(/^\d+\.\s+/, ""));
+              index += 1;
+            }
+            html.push(`<div class="docs-card"><ol>${items.map((item) => `<li>${inlineMarkdown(item)}</li>`).join("")}</ol></div>`);
+            continue;
+          }
+
+          const paragraphLines = [];
+          while (
+            index < lines.length &&
+            lines[index].trim() &&
+            !/^#{1,6}\s/.test(lines[index].trim()) &&
+            !lines[index].trim().startsWith("```") &&
+            !lines[index].trim().startsWith(">") &&
+            !/^[-*]\s+/.test(lines[index].trim()) &&
+            !/^\d+\.\s+/.test(lines[index].trim()) &&
+            !isTableLine(lines[index])
+          ) {
+            paragraphLines.push(lines[index].trim());
+            index += 1;
+          }
+
+          html.push(`<p>${inlineMarkdown(paragraphLines.join(" "))}</p>`);
+        }
+
+        return html.join("");
+      }
+
+      async function renderDocs() {
+        if (!state.docsMarkdown) {
+          elements.docsContent.innerHTML = `<div class="empty">Documentation indisponible</div>`;
+          return;
+        }
+
+        elements.docsContent.innerHTML = markdownToHtml(state.docsMarkdown);
+
+        const mermaidBlocks = [...elements.docsContent.querySelectorAll(".mermaid")];
+        for (const [blockIndex, node] of mermaidBlocks.entries()) {
+          const definition = node.textContent;
+          const { svg } = await mermaid.render(`mermaid-doc-${blockIndex}-${Date.now()}`, definition);
+          node.innerHTML = svg;
+        }
+      }
+
+      function renderActiveView() {
+        const isContracts = state.activeView === "contracts";
+        const isDocs = state.activeView === "docs";
+        const isApi = state.activeView === "api";
+
+        if (elements.contractsView) {
+          elements.contractsView.classList.toggle("hidden", !isContracts);
+        }
+        if (elements.docsView) {
+          elements.docsView.classList.toggle("hidden", !isDocs);
+        }
+        if (elements.previewSidebar) {
+          elements.previewSidebar.classList.toggle("hidden", isDocs);
+        }
+        if (elements.previewPanel) {
+          elements.previewPanel.classList.toggle("hidden", isApi);
+        }
+        if (elements.apiConsole) {
+          elements.apiConsole.classList.toggle("hidden", !isApi);
+        }
+
+        elements.navItems.forEach((node) => {
+          node.classList.toggle("active", node.dataset.view === state.activeView);
+        });
+      }
+
       function applyFilters() {
         const search = elements.searchInput.value.trim().toLowerCase();
         const status = elements.statusFilter.value;
@@ -1290,6 +1647,24 @@
       }
 
       function bindStaticEvents() {
+        elements.navItems.forEach((node) => {
+          node.addEventListener("click", async () => {
+            state.activeView = node.dataset.view;
+            renderActiveView();
+
+            if (state.activeView === "docs") {
+              await renderDocs();
+              return;
+            }
+
+            if (state.activeView === "api") {
+              renderApiConsole();
+              return;
+            }
+
+            render();
+          });
+        });
         elements.searchInput.addEventListener("input", render);
         elements.statusFilter.addEventListener("change", render);
         elements.typeFilter.addEventListener("change", render);
@@ -1313,15 +1688,37 @@
 
       function render() {
         applyFilters();
+        renderActiveView();
         renderContractsList();
         renderPreview();
         renderApiConsole();
         renderIcons();
       }
 
+      async function loadDocs() {
+        try {
+          const response = await fetch("./docs.md");
+
+          if (!response.ok) {
+            throw new Error(`Unable to load docs.md (${response.status})`);
+          }
+
+          state.docsMarkdown = await response.text();
+        } catch (error) {
+          state.docsMarkdown = "# Docs\n\nLa documentation n'a pas pu être chargée.";
+          console.error(error);
+        }
+      }
+
       async function init() {
         try {
+          await loadDocs();
+
           const response = await fetch("./data.json");
+          if (!response.ok) {
+            throw new Error(`Unable to load data.json (${response.status})`);
+          }
+
           const payload = await response.json();
           state.customers = payload.customers || [];
           state.contracts = payload.contracts || [];
@@ -1331,14 +1728,14 @@
           buildOptions(elements.statusFilter, [...new Set(state.contracts.map((contract) => contract.status))]);
           buildOptions(elements.typeFilter, [...new Set(state.contracts.map((contract) => contract.type))]);
           buildContractSelectOptions();
-
-          bindStaticEvents();
-          bindPreviewResize();
-          render();
         } catch (error) {
           elements.contractsList.innerHTML = `<div class="empty">Chargement impossible</div>`;
           console.error(error);
         }
+
+        bindStaticEvents();
+        bindPreviewResize();
+        render();
       }
 
       init();
