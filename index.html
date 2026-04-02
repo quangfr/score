@@ -4,693 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contrats</title>
-    <style>
-      :root {
-        --bg: #eaf3ff;
-        --bg-strong: #d7e8ff;
-        --panel: rgba(255, 255, 255, 0.82);
-        --panel-strong: #ffffff;
-        --line: rgba(87, 130, 197, 0.22);
-        --line-strong: rgba(52, 99, 177, 0.45);
-        --text: #0f1f39;
-        --muted: #5b6f92;
-        --accent: #1f6feb;
-        --accent-strong: #175ac2;
-        --accent-soft: rgba(31, 111, 235, 0.12);
-        --ok: #157347;
-        --warn: #a16207;
-        --shadow: 0 22px 60px rgba(18, 62, 128, 0.12);
-        --preview-width: 520px;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-        color: var(--text);
-        background:
-          radial-gradient(circle at top left, rgba(31, 111, 235, 0.16), transparent 25%),
-          linear-gradient(135deg, #edf5ff 0%, #ddeafe 50%, #eef6ff 100%);
-      }
-
-      button,
-      input,
-      select {
-        font: inherit;
-      }
-
-      .app-shell {
-        display: grid;
-        grid-template-columns: 220px minmax(320px, 1fr) minmax(360px, var(--preview-width));
-        min-height: 100vh;
-      }
-
-      .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        padding: 24px 18px;
-        background: linear-gradient(180deg, #0f2f62 0%, #123f84 100%);
-        color: #eef5ff;
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .brand {
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      .nav {
-        display: grid;
-        gap: 10px;
-      }
-
-      .nav-group-label {
-        margin-top: 6px;
-        font-size: 0.76rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(238, 245, 255, 0.72);
-      }
-
-      .nav-item {
-        padding: 12px 14px;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        font-weight: 600;
-        cursor: pointer;
-      }
-
-      .nav-item.active {
-        background: rgba(255, 255, 255, 0.16);
-        border-color: rgba(255, 255, 255, 0.24);
-      }
-
-      .main {
-        padding: 20px;
-      }
-
-      .preview-sidebar {
-        position: relative;
-        padding: 20px 20px 20px 0;
-      }
-
-      .preview-resizer {
-        position: absolute;
-        top: 20px;
-        left: -10px;
-        width: 20px;
-        height: calc(100vh - 40px);
-        cursor: col-resize;
-        z-index: 3;
-      }
-
-      .panel,
-      .contract-card,
-      .preview-panel,
-      .console-panel,
-      .modal-body {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(12px);
-      }
-
-      .panel,
-      .preview-panel,
-      .console-panel {
-        height: calc(100vh - 40px);
-        overflow: hidden;
-      }
-
-      .panel {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
-      .panel-head,
-      .preview-head,
-      .console-head,
-      .modal-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 18px 20px;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .panel-head h1,
-      .preview-head h2,
-      .console-head h2,
-      .modal-head h2 {
-        margin: 0;
-        font-size: 1rem;
-      }
-
-      .filters {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.8fr));
-        gap: 10px;
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--line);
-      }
-
-      input,
-      select {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 14px;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.85);
-        color: var(--text);
-      }
-
-      .list {
-        display: grid;
-        gap: 12px;
-        padding: 16px 20px 20px;
-        overflow: auto;
-      }
-
-      .contract-card {
-        padding: 16px;
-        cursor: pointer;
-        transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
-      }
-
-      .contract-card:hover,
-      .contract-card.active {
-        transform: translateY(-1px);
-        border-color: var(--line-strong);
-        background: rgba(255, 255, 255, 0.96);
-      }
-
-      .card-head,
-      .row,
-      .preview-meta {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: flex-start;
-      }
-
-      .contract-card h3,
-      .contract-card h4 {
-        margin: 0;
-        font-size: 1rem;
-      }
-
-      .subtle {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .stack {
-        display: grid;
-        gap: 8px;
-      }
-
-      .mini-grid {
-        display: grid;
-        gap: 8px;
-        margin-top: 12px;
-      }
-
-      .pill,
-      .tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 0.82rem;
-      }
-
-      .pill {
-        background: var(--accent-soft);
-        color: var(--accent-strong);
-      }
-
-      .pill.status-valid {
-        background: rgba(21, 115, 71, 0.12);
-        color: var(--ok);
-      }
-
-      .pill.status-warning {
-        background: rgba(161, 98, 7, 0.12);
-        color: var(--warn);
-      }
-
-      .tag {
-        background: rgba(31, 111, 235, 0.08);
-        color: var(--accent-strong);
-      }
-
-      .preview-panel,
-      .console-panel {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .preview-content,
-      .console-content {
-        padding: 18px 20px 20px;
-        overflow: auto;
-      }
-
-      .preview-content {
-        display: grid;
-        gap: 14px;
-      }
-
-      .contract-sheet {
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 255, 0.98)),
-          repeating-linear-gradient(180deg, transparent 0, transparent 26px, rgba(68, 110, 180, 0.05) 26px, rgba(68, 110, 180, 0.05) 27px);
-        border: 1px solid rgba(68, 110, 180, 0.14);
-        border-radius: 20px;
-        padding: 22px;
-      }
-
-      .contract-sheet h3,
-      .contract-sheet h4,
-      .contract-sheet p {
-        margin: 0;
-      }
-
-      .contract-sheet h3 {
-        margin-bottom: 8px;
-        font-size: 1.15rem;
-      }
-
-      .contract-sheet h4 {
-        margin-bottom: 10px;
-        font-size: 0.95rem;
-      }
-
-      .contract-sheet p {
-        line-height: 1.65;
-        margin-top: 10px;
-      }
-
-      .sheet-section {
-        margin-top: 18px;
-        padding-top: 18px;
-        border-top: 1px dashed rgba(68, 110, 180, 0.22);
-      }
-
-      .sheet-title-row,
-      .widget-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .sheet-title-row {
-        margin-bottom: 14px;
-      }
-
-      .key-values {
-        display: grid;
-        gap: 10px;
-      }
-
-      .key-value {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        padding-bottom: 10px;
-        border-bottom: 1px dashed rgba(68, 110, 180, 0.14);
-      }
-
-      .key-value span:first-child {
-        color: var(--muted);
-      }
-
-      .preview-subsection {
-        margin-top: 14px;
-      }
-
-      .preview-subsection h4 {
-        margin-bottom: 8px;
-      }
-
-      .widget-list {
-        display: grid;
-        gap: 14px;
-      }
-
-      .widget-card {
-        padding: 16px;
-        border-radius: 18px;
-        border: 1px solid rgba(68, 110, 180, 0.16);
-        background: rgba(255, 255, 255, 0.78);
-      }
-
-      .widget-meta {
-        display: grid;
-        gap: 6px;
-        margin-top: 10px;
-      }
-
-      .widget-data-list,
-      .widget-table,
-      .widget-paragraphs {
-        display: grid;
-        gap: 8px;
-        margin-top: 14px;
-      }
-
-      .widget-data-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: flex-start;
-      }
-
-      .widget-data-row strong {
-        text-align: right;
-      }
-
-      .widget-paragraphs p {
-        margin: 0;
-      }
-
-      .customer-editor {
-        display: grid;
-        gap: 10px;
-        margin-bottom: 14px;
-        padding: 14px;
-        border-radius: 16px;
-        border: 1px solid rgba(68, 110, 180, 0.14);
-        background: rgba(31, 111, 235, 0.06);
-      }
-
-      .customer-editor label {
-        font-size: 0.88rem;
-        color: var(--muted);
-      }
-
-      .customer-editor-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
-      }
-
-      .console-toolbar {
-        display: grid;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .console-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .console-route {
-        padding: 12px 14px;
-        border-radius: 14px;
-        border: 1px solid rgba(68, 110, 180, 0.16);
-        background: rgba(255, 255, 255, 0.72);
-      }
-
-      .console-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .endpoint-button {
-        padding: 10px 12px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.85);
-        color: var(--text);
-        cursor: pointer;
-      }
-
-      .endpoint-button.active {
-        border-color: rgba(31, 111, 235, 0.38);
-        background: rgba(31, 111, 235, 0.12);
-        color: var(--accent-strong);
-      }
-
-      .icon-button,
-      .action-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border: 0;
-        border-radius: 14px;
-        cursor: pointer;
-      }
-
-      .icon-button {
-        width: 42px;
-        height: 42px;
-        background: var(--accent-soft);
-        color: var(--accent-strong);
-      }
-
-      .action-button {
-        padding: 11px 14px;
-        background: var(--accent);
-        color: #fff;
-      }
-
-      .icon {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        stroke-width: 2;
-        fill: none;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      pre {
-        margin: 0;
-        padding: 16px;
-        overflow: auto;
-        border-radius: 18px;
-        background: #081a37;
-        color: #e3efff;
-        font-size: 0.84rem;
-      }
-
-      .docs-panel {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .docs-content {
-        padding: 22px 24px 28px;
-        overflow: auto;
-      }
-
-      .docs-shell {
-        max-width: 980px;
-        display: grid;
-        gap: 24px;
-      }
-
-      .docs-prose {
-        display: grid;
-        gap: 18px;
-        line-height: 1.7;
-      }
-
-      .docs-prose h1,
-      .docs-prose h2,
-      .docs-prose h3,
-      .docs-prose h4,
-      .docs-prose p,
-      .docs-prose ul,
-      .docs-prose ol,
-      .docs-prose table,
-      .docs-prose pre,
-      .docs-prose blockquote {
-        margin: 0;
-      }
-
-      .docs-prose h1 {
-        font-size: 1.9rem;
-      }
-
-      .docs-prose h2 {
-        margin-top: 8px;
-        padding-top: 18px;
-        font-size: 1.3rem;
-        border-top: 1px solid rgba(68, 110, 180, 0.14);
-      }
-
-      .docs-prose h3 {
-        font-size: 1.05rem;
-      }
-
-      .docs-prose ul,
-      .docs-prose ol {
-        padding-left: 20px;
-      }
-
-      .docs-prose li + li {
-        margin-top: 6px;
-      }
-
-      .docs-prose a {
-        color: var(--accent-strong);
-      }
-
-      .docs-prose code:not(pre code) {
-        padding: 0.15rem 0.42rem;
-        border-radius: 8px;
-        background: rgba(31, 111, 235, 0.08);
-        color: var(--accent-strong);
-        font-size: 0.92em;
-      }
-
-      .docs-prose table {
-        width: 100%;
-        border-collapse: collapse;
-        overflow: hidden;
-        border-radius: 18px;
-        border: 1px solid rgba(68, 110, 180, 0.16);
-        background: rgba(255, 255, 255, 0.78);
-      }
-
-      .docs-prose th,
-      .docs-prose td {
-        padding: 12px 14px;
-        text-align: left;
-        vertical-align: top;
-        border-bottom: 1px solid rgba(68, 110, 180, 0.12);
-      }
-
-      .docs-prose th {
-        background: rgba(31, 111, 235, 0.08);
-      }
-
-      .docs-prose blockquote {
-        padding: 14px 16px;
-        border-left: 4px solid rgba(31, 111, 235, 0.4);
-        background: rgba(31, 111, 235, 0.06);
-        border-radius: 0 14px 14px 0;
-        color: var(--muted);
-      }
-
-      .docs-card {
-        padding: 18px 20px;
-        border-radius: 22px;
-        border: 1px solid rgba(68, 110, 180, 0.14);
-        background: rgba(255, 255, 255, 0.76);
-        box-shadow: 0 14px 36px rgba(18, 62, 128, 0.08);
-      }
-
-      .mermaid-card {
-        overflow: auto;
-      }
-
-      .mermaid-card .mermaid {
-        min-width: 680px;
-      }
-
-      .empty {
-        padding: 16px;
-        border-radius: 16px;
-        border: 1px dashed var(--line-strong);
-        color: var(--muted);
-      }
-
-      .modal {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        background: rgba(7, 21, 44, 0.6);
-        z-index: 10;
-      }
-
-      .modal.open {
-        display: flex;
-      }
-
-      .modal-body {
-        width: min(1200px, 100%);
-        height: min(92vh, 100%);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-
-      .modal-content {
-        padding: 20px;
-        overflow: auto;
-      }
-
-      @media (max-width: 1180px) {
-        .app-shell {
-          grid-template-columns: 200px 1fr;
-        }
-
-        .preview-resizer {
-          display: none;
-        }
-
-        .preview-sidebar {
-          grid-column: 1 / -1;
-          padding: 0 20px 20px;
-        }
-
-        .preview-panel {
-          height: auto;
-          max-height: 65vh;
-        }
-      }
-
-      @media (max-width: 860px) {
-        .app-shell {
-          grid-template-columns: 1fr;
-        }
-
-        .sidebar {
-          border-right: 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .main,
-        .preview-sidebar {
-          padding: 16px;
-        }
-
-        .filters {
-          grid-template-columns: 1fr;
-        }
-
-        .panel,
-        .preview-panel,
-        .console-panel {
-          height: auto;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -709,10 +23,17 @@
         <section id="contractsView" class="panel">
           <div class="panel-head">
             <h1>Contrats</h1>
-            <span id="contractsCount" class="subtle"></span>
+            <div class="panel-head-actions">
+              <span id="contractsCount" class="subtle"></span>
+              <div id="filterModeSwitch" class="segment-control" aria-label="Modes de filtre">
+                <button class="segment-button active" type="button" data-filter-mode="1">1</button>
+                <button class="segment-button" type="button" data-filter-mode="2">2</button>
+                <button class="segment-button" type="button" data-filter-mode="3">3</button>
+              </div>
+            </div>
           </div>
 
-          <div class="filters">
+          <div class="filters hidden" aria-hidden="true">
             <input id="searchInput" type="search" placeholder="Rechercher" />
             <select id="statusFilter">
               <option value="">Statut</option>
@@ -722,7 +43,7 @@
             </select>
           </div>
 
-          <div id="contractsList" class="list"></div>
+          <div id="contractsList" class="contracts-table-shell"></div>
         </section>
 
         <section id="docsView" class="panel docs-panel hidden">
@@ -736,7 +57,7 @@
         </section>
       </main>
 
-      <aside id="previewSidebar" class="preview-sidebar">
+      <aside id="previewSidebar" class="preview-sidebar hidden">
         <div id="previewResizer" class="preview-resizer" aria-hidden="true"></div>
         <section id="previewPanel" class="preview-panel">
           <div class="preview-head">
@@ -769,15 +90,15 @@
       </aside>
     </div>
 
-    <div id="previewModal" class="modal" aria-hidden="true">
+    <div id="contractModal" class="modal" aria-hidden="true">
       <div class="modal-body">
         <div class="modal-head">
-          <h2>Prévisualisation</h2>
-          <button id="closePreviewModalButton" class="icon-button" type="button" aria-label="Fermer">
+          <h2>Contrat</h2>
+          <button id="closeContractModalButton" class="icon-button" type="button" aria-label="Fermer">
             <span data-lucide="x"></span>
           </button>
         </div>
-        <div id="modalPreviewContent" class="modal-content"></div>
+        <div id="contractModalContent" class="modal-content"></div>
       </div>
     </div>
 
@@ -798,9 +119,22 @@
         apiEndpoint: "list",
         activeView: "contracts",
         docsMarkdown: "",
+        filterMode: "1",
+        headerFiltersOpen: false,
+        activeHeaderPopover: null,
+        popoverSearch: "",
+        columnFilters: {
+          reference: { text: "" },
+          contract: { text: "" },
+          client: { text: "", selected: [] },
+          type: { text: "", selected: [] },
+          region: { text: "", selected: [] },
+          status: { text: "", selected: [] },
+        },
       };
 
       const elements = {
+        appShell: document.querySelector(".app-shell"),
         navItems: [...document.querySelectorAll("[data-view]")],
         contractsView: document.getElementById("contractsView"),
         docsView: document.getElementById("docsView"),
@@ -809,6 +143,7 @@
         typeFilter: document.getElementById("typeFilter"),
         contractsCount: document.getElementById("contractsCount"),
         contractsList: document.getElementById("contractsList"),
+        filterModeSwitch: document.getElementById("filterModeSwitch"),
         contractPreview: document.getElementById("contractPreview"),
         jsonPayload: document.getElementById("jsonPayload"),
         apiEndpointButtons: document.getElementById("apiEndpointButtons"),
@@ -817,9 +152,9 @@
         apiMeta: document.getElementById("apiMeta"),
         apiConsole: document.getElementById("apiConsole"),
         openPreviewModalButton: document.getElementById("openPreviewModalButton"),
-        closePreviewModalButton: document.getElementById("closePreviewModalButton"),
-        previewModal: document.getElementById("previewModal"),
-        modalPreviewContent: document.getElementById("modalPreviewContent"),
+        closeContractModalButton: document.getElementById("closeContractModalButton"),
+        contractModal: document.getElementById("contractModal"),
+        contractModalContent: document.getElementById("contractModalContent"),
         previewResizer: document.getElementById("previewResizer"),
         previewSidebar: document.getElementById("previewSidebar"),
         previewPanel: document.getElementById("previewPanel"),
@@ -839,6 +174,11 @@
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M18 6 6 18"></path>
             <path d="m6 6 12 12"></path>
+          </svg>
+        `,
+        filter: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path>
           </svg>
         `,
       };
@@ -898,6 +238,168 @@
               `
             )
           .join("")}
+        `;
+      }
+
+      function getFilterOptions(key) {
+        const valuesByKey = {
+          client: [...new Set(state.contracts.map((contract) => hydrateContract(contract)?.customer.name).filter(Boolean))],
+          type: [...new Set(state.contracts.map((contract) => contract.type).filter(Boolean))],
+          region: [...new Set(state.contracts.map((contract) => contract.region).filter(Boolean))],
+          status: [...new Set(state.contracts.map((contract) => contract.globalValidationStatus).filter(Boolean))],
+        };
+
+        return (valuesByKey[key] || []).sort((a, b) => a.localeCompare(b, "fr"));
+      }
+
+      function getColumnFilterValue(key) {
+        return state.columnFilters[key] || { text: "", selected: [] };
+      }
+
+      function setColumnTextFilter(key, value) {
+        state.columnFilters[key] = {
+          ...getColumnFilterValue(key),
+          text: value,
+        };
+        render();
+      }
+
+      function toggleColumnSelectedValue(key, value) {
+        const current = getColumnFilterValue(key);
+        const selected = new Set(current.selected || []);
+        if (selected.has(value)) {
+          selected.delete(value);
+        } else {
+          selected.add(value);
+        }
+        state.columnFilters[key] = {
+          ...current,
+          selected: [...selected],
+        };
+        render();
+      }
+
+      function clearAllColumnFilters() {
+        state.columnFilters = {
+          reference: { text: "" },
+          contract: { text: "" },
+          client: { text: "", selected: [] },
+          type: { text: "", selected: [] },
+          region: { text: "", selected: [] },
+          status: { text: "", selected: [] },
+        };
+        state.popoverSearch = "";
+      }
+
+      function renderFilterControl(key, label, type = "text") {
+        const value = getColumnFilterValue(key);
+        if (type === "select") {
+          return `
+            <select data-column-filter="${key}" aria-label="${escapeHtml(label)}">
+              <option value="">Tous</option>
+              ${getFilterOptions(key)
+                .map((option) => `<option value="${escapeHtml(option)}"${option === value.text ? " selected" : ""}>${escapeHtml(option)}</option>`)
+                .join("")}
+            </select>
+          `;
+        }
+
+        return `
+          <input
+            data-column-filter="${key}"
+            type="search"
+            value="${escapeHtml(value.text || "")}"
+            placeholder="${escapeHtml(label)}"
+            aria-label="${escapeHtml(label)}"
+          />
+        `;
+      }
+
+      function hasActiveFilter(key) {
+        const value = getColumnFilterValue(key);
+        return Boolean(value.text) || Boolean((value.selected || []).length);
+      }
+
+      function renderPopoverFilter(key, label, mode = "text") {
+        const isOpen = state.activeHeaderPopover === key;
+        const hasValue = hasActiveFilter(key);
+        const current = getColumnFilterValue(key);
+        const options = getFilterOptions(key).filter((option) =>
+          option.toLowerCase().includes(state.popoverSearch.toLowerCase())
+        );
+        return `
+          <div class="header-popover-slot">
+            <button
+              class="header-filter-button${hasValue ? " is-active" : ""}"
+              type="button"
+              data-filter-popover-toggle="${key}"
+              aria-expanded="${isOpen ? "true" : "false"}"
+              aria-label="Filtrer ${escapeHtml(label)}"
+            >
+              <span data-lucide="filter"></span>
+            </button>
+            ${
+              isOpen
+                ? `
+                  <div class="header-popover" data-filter-popover="${key}">
+                    <div class="header-popover-title">${escapeHtml(label)}</div>
+                    <input
+                      type="search"
+                      value="${escapeHtml(mode === "text" ? current.text || "" : state.popoverSearch)}"
+                      placeholder="Rechercher"
+                      data-filter-search="${key}"
+                      aria-label="Rechercher dans ${escapeHtml(label)}"
+                    />
+                    <button class="popover-reset-button" type="button" data-filter-reset="${key}">Réinitialiser</button>
+                    ${
+                      mode === "multi"
+                        ? `
+                          <div class="header-checklist">
+                            ${options.length
+                              ? options
+                                  .map(
+                                    (option) => `
+                                      <label class="check-option">
+                                        <input
+                                          type="checkbox"
+                                          data-filter-option="${key}"
+                                          value="${escapeHtml(option)}"
+                                          ${(current.selected || []).includes(option) ? "checked" : ""}
+                                        />
+                                        <span>${escapeHtml(option)}</span>
+                                      </label>
+                                    `
+                                  )
+                                  .join("")
+                              : `<div class="subtle">Aucun résultat</div>`}
+                          </div>
+                        `
+                        : ""
+                    }
+                  </div>
+                `
+                : ""
+            }
+          </div>
+        `;
+      }
+
+      function renderHeaderFilters() {
+        const visibleInline = state.filterMode === "1" || (state.filterMode === "3" && state.headerFiltersOpen);
+        if (!visibleInline) {
+          return "";
+        }
+
+        return `
+          <tr class="contracts-filter-row">
+            <th>${renderFilterControl("reference", "Référence")}</th>
+            <th>${renderFilterControl("contract", "Contrat")}</th>
+            <th>${renderFilterControl("client", "Client")}</th>
+            <th>${renderFilterControl("type", "Type", "select")}</th>
+            <th>${renderFilterControl("region", "Région", "select")}</th>
+            <th></th>
+            <th>${renderFilterControl("status", "Statut", "select")}</th>
+          </tr>
         `;
       }
 
@@ -1328,9 +830,9 @@
         return true;
       }
 
-      function bindPreviewCustomerEditor() {
-        const searchInput = elements.contractPreview.querySelector("#customerSearchInput");
-        const applyButton = elements.contractPreview.querySelector("#applyCustomerChangeButton");
+      function bindContractCustomerEditor(root) {
+        const searchInput = root.querySelector("#customerSearchInput");
+        const applyButton = root.querySelector("#applyCustomerChangeButton");
 
         if (!searchInput || !applyButton) {
           return;
@@ -1365,42 +867,192 @@
           return;
         }
 
-        elements.contractsList.innerHTML = contracts
-          .map((contract) => {
-            const hydratedContract = hydrateContract(contract);
-            const isActive = contract.id === state.selectedContractId ? "active" : "";
-            return `
-              <article class="contract-card ${isActive}" data-contract-id="${escapeHtml(contract.id)}">
-                <div class="card-head">
-                  <div class="stack">
-                    <h3>${escapeHtml(hydratedContract.id)}</h3>
-                    <div class="subtle">${escapeHtml(hydratedContract.name)}</div>
-                  </div>
-                  <span class="pill ${widgetStatusClass(hydratedContract.globalValidationStatus)}">${escapeHtml(hydratedContract.globalValidationStatus)}</span>
+        elements.contractsList.innerHTML = `
+          ${
+            state.filterMode === "3"
+              ? `
+                <div class="contracts-table-toolbar">
+                  <button class="table-toolbar-button" type="button" id="toggleHeaderFiltersButton">
+                    ${state.headerFiltersOpen ? "Masquer les filtres" : "Afficher les filtres"}
+                  </button>
+                  <button class="table-toolbar-button subtle-button" type="button" id="clearHeaderFiltersButton">
+                    Réinitialiser
+                  </button>
                 </div>
-                <div class="mini-grid">
-                  <div class="row"><span class="subtle">${escapeHtml(hydratedContract.customer.name)}</span><span class="tag">${escapeHtml(hydratedContract.type)}</span></div>
-                  <div class="row"><span class="subtle">${escapeHtml(hydratedContract.region)}</span><span class="subtle">${escapeHtml(formatDate(hydratedContract.startDate))}</span></div>
-                </div>
-              </article>
-            `;
-          })
-          .join("");
+              `
+              : ""
+          }
+          <div class="contracts-table-wrap">
+            <table class="contracts-table">
+              <thead>
+                <tr>
+                  <th>
+                    <div class="th-content">
+                      <span>Référence</span>
+                      ${state.filterMode === "2" ? renderPopoverFilter("reference", "Référence", "text") : ""}
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-content">
+                      <span>Contrat</span>
+                      ${state.filterMode === "2" ? renderPopoverFilter("contract", "Contrat", "text") : ""}
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-content">
+                      <span>Client</span>
+                      ${state.filterMode === "2" ? renderPopoverFilter("client", "Client", "multi") : ""}
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-content">
+                      <span>Type</span>
+                      ${state.filterMode === "2" ? renderPopoverFilter("type", "Type", "multi") : ""}
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-content">
+                      <span>Région</span>
+                      ${state.filterMode === "2" ? renderPopoverFilter("region", "Région", "multi") : ""}
+                    </div>
+                  </th>
+                  <th>Période</th>
+                  <th>
+                    <div class="th-content">
+                      <span>Statut</span>
+                      ${state.filterMode === "2" ? renderPopoverFilter("status", "Statut", "multi") : ""}
+                    </div>
+                  </th>
+                </tr>
+                ${renderHeaderFilters()}
+              </thead>
+              <tbody>
+                ${contracts
+                  .map((contract) => {
+                    const hydratedContract = hydrateContract(contract);
+                    const isActive = contract.id === state.selectedContractId ? ' class="active"' : "";
+                    return `
+                      <tr data-contract-id="${escapeHtml(contract.id)}"${isActive} tabindex="0">
+                        <td><strong>${escapeHtml(hydratedContract.id)}</strong></td>
+                        <td>
+                          <div class="table-cell-stack">
+                            <span>${escapeHtml(hydratedContract.name)}</span>
+                            <span class="subtle">${escapeHtml(hydratedContract.managingTeam.name)}</span>
+                          </div>
+                        </td>
+                        <td>${escapeHtml(hydratedContract.customer.name)}</td>
+                        <td><span class="tag">${escapeHtml(hydratedContract.type)}</span></td>
+                        <td>${escapeHtml(hydratedContract.region)}</td>
+                        <td>
+                          <div class="table-cell-stack">
+                            <span>${escapeHtml(formatDate(hydratedContract.startDate))}</span>
+                            <span class="subtle">${escapeHtml(formatDate(hydratedContract.endDate))}</span>
+                          </div>
+                        </td>
+                        <td><span class="pill ${widgetStatusClass(hydratedContract.globalValidationStatus)}">${escapeHtml(hydratedContract.globalValidationStatus)}</span></td>
+                      </tr>
+                    `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
 
+        bindContractsTableEvents();
+      }
+
+      function bindContractsTableEvents() {
         elements.contractsList.querySelectorAll("[data-contract-id]").forEach((node) => {
-          node.addEventListener("click", () => {
+          const selectContract = () => {
             state.selectedContractId = node.dataset.contractId;
+            render();
+            openContractModal();
+          };
+
+          node.addEventListener("click", selectContract);
+          node.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              selectContract();
+            }
+          });
+        });
+
+        elements.contractsList.querySelectorAll("[data-column-filter]").forEach((node) => {
+          const update = () => setColumnTextFilter(node.dataset.columnFilter, node.value);
+          node.addEventListener("input", update);
+          node.addEventListener("change", update);
+          node.addEventListener("click", (event) => event.stopPropagation());
+        });
+
+        elements.contractsList.querySelectorAll("[data-filter-popover-toggle]").forEach((node) => {
+          node.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const key = node.dataset.filterPopoverToggle;
+            state.activeHeaderPopover = state.activeHeaderPopover === key ? null : key;
+            state.popoverSearch = "";
+            renderContractsList();
+          });
+        });
+
+        elements.contractsList.querySelectorAll("[data-filter-search]").forEach((node) => {
+          node.addEventListener("input", (event) => {
+            event.stopPropagation();
+            const key = node.dataset.filterSearch;
+            if (["reference", "contract"].includes(key)) {
+              setColumnTextFilter(key, node.value);
+              return;
+            }
+            state.popoverSearch = node.value;
+            renderContractsList();
+          });
+          node.addEventListener("click", (event) => event.stopPropagation());
+        });
+
+        elements.contractsList.querySelectorAll("[data-filter-option]").forEach((node) => {
+          node.addEventListener("change", (event) => {
+            event.stopPropagation();
+            toggleColumnSelectedValue(node.dataset.filterOption, node.value);
+          });
+          node.addEventListener("click", (event) => event.stopPropagation());
+        });
+
+        elements.contractsList.querySelectorAll("[data-filter-reset]").forEach((node) => {
+          node.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const key = node.dataset.filterReset;
+            state.columnFilters[key] = ["reference", "contract"].includes(key)
+              ? { text: "" }
+              : { text: "", selected: [] };
+            state.popoverSearch = "";
             render();
           });
         });
+
+        const toggleHeaderFiltersButton = elements.contractsList.querySelector("#toggleHeaderFiltersButton");
+        if (toggleHeaderFiltersButton) {
+          toggleHeaderFiltersButton.addEventListener("click", () => {
+            state.headerFiltersOpen = !state.headerFiltersOpen;
+            renderContractsList();
+          });
+        }
+
+        const clearHeaderFiltersButton = elements.contractsList.querySelector("#clearHeaderFiltersButton");
+        if (clearHeaderFiltersButton) {
+          clearHeaderFiltersButton.addEventListener("click", () => {
+            clearAllColumnFilters();
+            render();
+          });
+        }
       }
 
       function renderPreview() {
         const contract = getSelectedContract();
         const previewHtml = buildPreviewHtml(contract);
         elements.contractPreview.innerHTML = previewHtml;
-        elements.modalPreviewContent.innerHTML = previewHtml;
-        bindPreviewCustomerEditor();
+        elements.contractModalContent.innerHTML = previewHtml;
+        bindContractCustomerEditor(elements.contractModalContent);
       }
 
       function renderApiConsole() {
@@ -1592,13 +1244,16 @@
           elements.docsView.classList.toggle("hidden", !isDocs);
         }
         if (elements.previewSidebar) {
-          elements.previewSidebar.classList.toggle("hidden", isDocs);
+          elements.previewSidebar.classList.toggle("hidden", !isApi);
         }
         if (elements.previewPanel) {
-          elements.previewPanel.classList.toggle("hidden", isApi);
+          elements.previewPanel.classList.add("hidden");
         }
         if (elements.apiConsole) {
           elements.apiConsole.classList.toggle("hidden", !isApi);
+        }
+        if (elements.appShell) {
+          elements.appShell.classList.toggle("docs-mode", !isApi);
         }
 
         elements.navItems.forEach((node) => {
@@ -1607,28 +1262,35 @@
       }
 
       function applyFilters() {
-        const search = elements.searchInput.value.trim().toLowerCase();
-        const status = elements.statusFilter.value;
-        const type = elements.typeFilter.value;
+        const filters = Object.fromEntries(
+          Object.entries(state.columnFilters).map(([key, value]) => [
+            key,
+            {
+              text: String(value.text || "").trim().toLowerCase(),
+              selected: (value.selected || []).map((item) => item.toLowerCase()),
+            },
+          ])
+        );
 
         state.filteredContracts = state.contracts.filter((contract) => {
           const hydratedContract = hydrateContract(contract);
-          const searchable = [
-            hydratedContract.id,
-            hydratedContract.name,
-            hydratedContract.customer.name,
-            hydratedContract.customer.accountCode,
-            hydratedContract.type,
-            hydratedContract.region,
-            hydratedContract.managingTeam.name,
-          ]
-            .join(" ")
-            .toLowerCase();
-
-          const matchesSearch = !search || searchable.includes(search);
-          const matchesStatus = !status || hydratedContract.status === status;
-          const matchesType = !type || hydratedContract.type === type;
-          return matchesSearch && matchesStatus && matchesType;
+          const matchesReference = !filters.reference.text || hydratedContract.id.toLowerCase().includes(filters.reference.text);
+          const matchesContract =
+            !filters.contract.text ||
+            [hydratedContract.name, hydratedContract.managingTeam.name].join(" ").toLowerCase().includes(filters.contract.text);
+          const matchesClient =
+            (!filters.client.text ||
+              [hydratedContract.customer.name, hydratedContract.customer.accountCode].join(" ").toLowerCase().includes(filters.client.text)) &&
+            (!(filters.client.selected || []).length ||
+              filters.client.selected.includes(hydratedContract.customer.name.toLowerCase()));
+          const matchesType =
+            !(filters.type.selected || []).length || filters.type.selected.includes(hydratedContract.type.toLowerCase());
+          const matchesRegion =
+            !(filters.region.selected || []).length || filters.region.selected.includes(hydratedContract.region.toLowerCase());
+          const matchesStatus =
+            !(filters.status.selected || []).length ||
+            filters.status.selected.includes(hydratedContract.globalValidationStatus.toLowerCase());
+          return matchesReference && matchesContract && matchesClient && matchesType && matchesRegion && matchesStatus;
         });
 
         if (!state.filteredContracts.some((contract) => contract.id === state.selectedContractId)) {
@@ -1636,14 +1298,14 @@
         }
       }
 
-      function openPreviewModal() {
-        elements.previewModal.classList.add("open");
-        elements.previewModal.setAttribute("aria-hidden", "false");
+      function openContractModal() {
+        elements.contractModal.classList.add("open");
+        elements.contractModal.setAttribute("aria-hidden", "false");
       }
 
-      function closePreviewModal() {
-        elements.previewModal.classList.remove("open");
-        elements.previewModal.setAttribute("aria-hidden", "true");
+      function closeContractModal() {
+        elements.contractModal.classList.remove("open");
+        elements.contractModal.setAttribute("aria-hidden", "true");
       }
 
       function bindStaticEvents() {
@@ -1668,20 +1330,40 @@
         elements.searchInput.addEventListener("input", render);
         elements.statusFilter.addEventListener("change", render);
         elements.typeFilter.addEventListener("change", render);
+        elements.filterModeSwitch.querySelectorAll("[data-filter-mode]").forEach((node) => {
+          node.addEventListener("click", () => {
+            state.filterMode = node.dataset.filterMode;
+            state.activeHeaderPopover = null;
+            state.headerFiltersOpen = state.filterMode === "3" ? state.headerFiltersOpen : false;
+            render();
+          });
+        });
         elements.apiContractSelect.addEventListener("change", () => {
           state.selectedContractId = elements.apiContractSelect.value || state.contracts[0]?.id || null;
           render();
         });
-        elements.openPreviewModalButton.addEventListener("click", openPreviewModal);
-        elements.closePreviewModalButton.addEventListener("click", closePreviewModal);
-        elements.previewModal.addEventListener("click", (event) => {
-          if (event.target === elements.previewModal) {
-            closePreviewModal();
+        if (elements.openPreviewModalButton) {
+          elements.openPreviewModalButton.addEventListener("click", openContractModal);
+        }
+        elements.closeContractModalButton.addEventListener("click", closeContractModal);
+        elements.contractModal.addEventListener("click", (event) => {
+          if (event.target === elements.contractModal) {
+            closeContractModal();
           }
         });
         window.addEventListener("keydown", (event) => {
           if (event.key === "Escape") {
-            closePreviewModal();
+            closeContractModal();
+            if (state.activeHeaderPopover) {
+              state.activeHeaderPopover = null;
+              renderContractsList();
+            }
+          }
+        });
+        document.addEventListener("click", () => {
+          if (state.activeHeaderPopover) {
+            state.activeHeaderPopover = null;
+            renderContractsList();
           }
         });
       }
@@ -1693,6 +1375,9 @@
         renderPreview();
         renderApiConsole();
         renderIcons();
+        elements.filterModeSwitch.querySelectorAll("[data-filter-mode]").forEach((node) => {
+          node.classList.toggle("active", node.dataset.filterMode === state.filterMode);
+        });
       }
 
       async function loadDocs() {
