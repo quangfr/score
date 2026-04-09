@@ -14,14 +14,35 @@ Elle répond à un besoin métier simple :
 
 Le PDF contractuel reste la source documentaire de référence. SCORE n'a pas vocation à remplacer le document juridique original ; l'application expose une représentation structurée, éditable et filtrable des informations de gestion utiles au pilotage de contrats moteur.
 
+## 1.1 Utilisateurs cibles
+
+Les utilisateurs visés par SCORE sont principalement :
+
+- les équipes de gestion de contrats, qui consultent, créent et mettent à jour les données structurées ;
+- les équipes facturation, qui recherchent les informations tarifaires et contractuelles utiles au traitement opérationnel ;
+- les équipes flotte et support, qui consultent les données de couverture moteurs et programmes ;
+- les équipes relation client, qui recherchent les contacts de gestion et les informations contractuelles clés ;
+- d'autres applications du SI, qui peuvent consommer le dataset structuré via la Console API locale.
+
+## 1.2 Capacités métier attendues
+
+Le produit vise à couvrir les besoins suivants :
+
+- centraliser les informations synthétisées des contrats ;
+- faciliter la recherche, la consultation et le partage de données contractuelles ;
+- identifier rapidement les équipes gestionnaires et les contacts associés ;
+- exposer des synthèses documentaires et des extraits issus des PDF contractuels ;
+- administrer les référentiels utilisés pour normaliser la saisie ;
+- fournir un socle de données réutilisable par d'autres écrans, outils ou exports.
+
 ## 2. Périmètre fonctionnel actuel
 
 L'application implémente aujourd'hui quatre espaces principaux :
 
-- `Contrats` : liste des contrats, filtres de recherche, prévisualisation et modal d'édition.
+- `Contrats` : liste des contrats, filtres de recherche et modal de création/édition.
 - `Référentiels` : administration locale des listes de valeurs et du référentiel `customers`.
 - `Docs` : documentation embarquée, rendue depuis `docs.md`.
-- `Console API` : projection JSON simulée du dataset courant.
+- `Console API` : exploration et mutation locales du dataset persisté en IndexedDB.
 
 Fonctionnellement, le produit permet :
 
@@ -30,8 +51,19 @@ Fonctionnellement, le produit permet :
 - d'ouvrir un contrat en modal et d'éditer ses données de manière compacte ;
 - de créer un nouveau contrat depuis l'interface ;
 - de modifier les référentiels utilisés dans les listes déroulantes ;
-- d'exposer le dataset courant via une console API simulée ;
+- d'exposer et modifier le dataset courant via une console API locale ;
 - de persister les modifications localement dans le navigateur via IndexedDB.
+
+## 2.1 Hors périmètre actuel
+
+Le prototype ne couvre pas :
+
+- la rédaction, la validation juridique ou la signature des contrats ;
+- le remplacement du PDF source comme référence documentaire ;
+- un backend serveur ou une API distante ;
+- une gestion sécurisée des rôles et habilitations ;
+- les imports et exports de masse au format bureautique ;
+- les parcours d'administration avancés décrits dans la vision cible du produit.
 
 ## 3. Navigation et interfaces
 
@@ -44,15 +76,14 @@ La sidebar constitue le point d'entrée principal de l'application.
 | `Contrats` | vue opérationnelle principale |
 | `Référentiels` | administration locale des listes et clients |
 | `Docs` | documentation fonctionnelle et technique |
-| `Console API` | visualisation des endpoints simulés |
+| `Console API` | exploration et mutation locale du dataset via routes JSON |
 
 ## 3.2 Vue `Contrats`
 
-La vue `Contrats` se compose de trois zones :
+La vue `Contrats` se compose de deux zones :
 
 - un header avec compteur et bouton de création ;
-- une table de contrats avec filtres popover dans les en-têtes de colonnes ;
-- un panneau droit de prévisualisation.
+- une table de contrats avec filtres popover dans les en-têtes de colonnes.
 
 Le tableau affiche :
 
@@ -66,20 +97,7 @@ Le tableau affiche :
 
 Chaque ligne est sélectionnable au clic ou au clavier.
 
-## 3.3 Panneau de prévisualisation
-
-Le panneau droit affiche la fiche synthétique du contrat sélectionné :
-
-- informations générales ;
-- finance ;
-- flotte ;
-- documents ;
-- widgets ;
-- extraits PDF simulés.
-
-Le panneau est redimensionnable sur desktop, avec persistance de largeur dans `localStorage`.
-
-## 3.4 Modal contrat
+## 3.3 Modal contrat
 
 La modal contrat sert à la fois à l'édition et à la création.
 
@@ -89,11 +107,12 @@ Caractéristiques :
 - onglets horizontaux avec icônes Lucide ;
 - édition compacte par groupes de champs ;
 - formulaires adaptés au type de donnée : `input`, `select`, `textarea`, `date`, `number` ;
-- validation de champs obligatoires lors de la création ;
+- validation de champs obligatoires en création comme en édition ;
+- rangée d'actions homogène avec `Supprimer` en édition, puis `Annuler` et `Créer` ou `Sauvegarder` ;
 - édition des widgets dans un onglet dédié ;
 - consultation des extraits PDF dans un onglet dédié.
 
-## 3.5 Vue `Référentiels`
+## 3.4 Vue `Référentiels`
 
 La vue `Référentiels` expose un onglet horizontal pour :
 
@@ -116,7 +135,7 @@ L'écran permet :
 
 Les autres référentiels sont gérés comme des listes simples de chaînes.
 
-## 3.6 Vue `Docs`
+## 3.5 Vue `Docs`
 
 L'onglet `Docs` charge `docs.md` puis le convertit en HTML côté client via un parser Markdown embarqué.
 
@@ -130,16 +149,40 @@ Le moteur gère :
 - blocs de code ;
 - diagrammes Mermaid.
 
-## 3.7 Vue `Console API`
+## 3.6 Vue `Console API`
 
-La console API ne fait aucun appel réseau métier. Elle projette l'état courant en mémoire sous forme de payloads JSON simulés.
+La Console API ne fait aucun appel réseau distant, mais elle réalise de vraies opérations locales sur le dataset persisté en IndexedDB.
+
+La page se présente sous forme de deux colonnes redimensionnables :
+
+- un panneau `Request` avec sélecteur de route, définition de requête, corps JSON éditable et action `Send` ;
+- un panneau `Response` avec définition de réponse et payload JSON renvoyé.
+
+Les blocs de définition de requête et de réponse sont repliés par défaut.
 
 Endpoints disponibles :
 
 - `GET /api/contracts`
 - `GET /api/contracts/:id`
+- `POST /api/contracts`
+- `PUT /api/contracts/:id`
 - `GET /api/customers`
+- `POST /api/customers`
+- `PUT /api/customers/:id`
+- `GET /api/<referential>`
+- `PUT /api/<referential>`
 - `GET /api/export/data.json`
+
+## 3.7 Parcours utilisateur principaux
+
+Les parcours actuellement couverts dans l'application sont :
+
+- rechercher un contrat dans la table puis ouvrir sa modal ;
+- créer un contrat en renseignant les champs obligatoires et les référentiels ;
+- modifier un contrat existant puis sauvegarder explicitement le brouillon ;
+- supprimer un contrat depuis la modal d'édition ;
+- administrer les référentiels et clients utilisés par les formulaires ;
+- inspecter ou modifier le dataset depuis la Console API locale.
 
 ## 4. Architecture des données
 
@@ -187,43 +230,131 @@ erDiagram
 
 ## 4.3 Objet `Customer`
 
+Définition alignée sur la Console API :
+
 | Champ | Type | Description |
 | --- | --- | --- |
-| `id` | `string` | identifiant technique |
-| `name` | `string` | nom commercial |
-| `accountCode` | `string` | code compte |
-| `country` | `string` | pays principal |
+| `id` | `string` | identifiant client unique |
+| `name` | `string` | nom commercial du client |
+| `accountCode` | `string` | code compte utilisé par l'organisation |
+| `country` | `string` | pays principal du client |
+
+`Customer` est l'objet de référence utilisé :
+
+- pour hydrater les contrats à l'affichage ;
+- pour alimenter les listes de sélection de client ;
+- pour exposer le référentiel client dans la Console API ;
+- pour supporter les opérations locales de création et de mise à jour.
 
 ## 4.4 Objet `Contract`
 
+Définition alignée sur la Console API :
+
 | Champ | Type | Description |
 | --- | --- | --- |
-| `id` | `string` | identifiant unique |
-| `name` | `string` | libellé métier |
-| `type` | `string` | type de contrat |
-| `customerId` | `string` | référence vers `customers.id` |
-| `region` | `string` | région métier |
-| `status` | `string` | statut métier du contrat |
-| `startDate` | `string` | date de début `YYYY-MM-DD` |
-| `endDate` | `string` | date de fin `YYYY-MM-DD` |
-| `globalValidationStatus` | `string` | statut consolidé de validation |
-| `managingTeam` | `ManagingTeam` | équipe de gestion |
-| `financials` | `Financials` | bloc finance |
-| `fleet` | `Fleet` | bloc flotte |
-| `documents` | `Documents` | informations documentaires |
-| `widgets` | `Widget[]` | détail métier |
-| `pdfSimulation` | `PdfSimulation` | extraits PDF simulés |
+| `id` | `string` | identifiant contrat unique |
+| `name` | `string` | libellé métier du contrat |
+| `type` | `enum` | valeur du référentiel de type de contrat |
+| `customerId` | `string` | clé étrangère vers `customers.id` |
+| `region` | `enum` | région opérationnelle du contrat |
+| `status` | `enum` | statut métier du contrat |
+| `startDate` | `date` | date de début du contrat au format `YYYY-MM-DD` |
+| `endDate` | `date` | date de fin du contrat au format `YYYY-MM-DD` |
+| `globalValidationStatus` | `enum` | statut global de validation |
+| `managingTeam` | `object` | équipe de gestion et contacts associés |
+| `financials` | `object` | bloc de données financières |
+| `fleet` | `object` | couverture flotte et moteurs |
+| `documents` | `object` | métadonnées documentaires et synthèse IA |
+| `widgets` | `array` | widgets métier du contrat |
+| `pdfSimulation` | `object` | extraits simulés du PDF source |
+
+Deux niveaux de représentation existent dans l'application :
+
+- `Contract summary` : projection synthétique utilisée dans `GET /api/contracts` et dans la liste ;
+- `Contract` complet : objet détaillé utilisé dans `GET /api/contracts/:id`, la modal et les opérations d'édition.
+
+### 4.4.1 Projection `Contract summary`
+
+La projection synthétique expose uniquement les champs utilisés pour le listing et pour les réponses légères de la Console API.
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | identifiant contrat unique |
+| `name` | `string` | libellé métier du contrat |
+| `type` | `enum` | type de contrat |
+| `status` | `enum` | statut métier courant |
+| `globalValidationStatus` | `enum` | statut global de validation |
+| `customer` | `object` | objet client hydraté |
+| `region` | `enum` | région d'exploitation |
+| `startDate` | `date` | date de début |
+| `endDate` | `date` | date de fin |
 
 ## 4.5 Sous-objets
 
 | Objet | Champs principaux | Usage |
 | --- | --- | --- |
-| `ManagingTeam` | `name`, `contact`, `email`, `phone`, `company` | identification des interlocuteurs |
-| `Financials` | `currency`, `billingModel`, `estimatedAnnualValue`, `rateRevision` | bloc finance |
-| `Fleet` | `program`, `enginesCovered`, `aircraftCovered`, `base` | bloc flotte |
-| `Documents` | `sourcePdf`, `summaryAi`, `importantPages` | bloc documents |
-| `Widget` | `id`, `name`, `type`, `status`, `lastStatusChange`, `readAccess`, `editAccess`, `data` | détail contractuel |
-| `PdfSimulation` | `title`, `pages` | projection documentaire simulée |
+| `ManagingTeam` | `name`, `contact`, `email`, `phone`, `company` | équipe de gestion et interlocuteurs du contrat |
+| `Financials` | `currency`, `billingModel`, `estimatedAnnualValue`, `rateRevision` | bloc de données financières |
+| `Fleet` | `program`, `enginesCovered`, `aircraftCovered`, `base` | couverture flotte, moteurs et base de rattachement |
+| `Documents` | `sourcePdf`, `summaryAi`, `importantPages` | source PDF, synthèse IA et pages marquantes |
+| `Widget` | `id`, `name`, `type`, `status`, `lastStatusChange`, `readAccess`, `editAccess`, `data` | unité détaillée d'information contractuelle |
+| `PdfSimulation` | `title`, `pages` | projection simulée des extraits du PDF source |
+
+### 4.5.1 Objet `ManagingTeam`
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | nom de l'équipe de gestion |
+| `contact` | `string` | nom de l'interlocuteur principal |
+| `email` | `string` | adresse e-mail de contact |
+| `phone` | `string` | numéro de téléphone |
+| `company` | `string` | société de rattachement |
+
+### 4.5.2 Objet `Financials`
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `currency` | `enum` | devise de référence |
+| `billingModel` | `enum` | modèle de facturation |
+| `estimatedAnnualValue` | `number` | valeur annuelle estimée |
+| `rateRevision` | `string` | règle de révision tarifaire |
+
+### 4.5.3 Objet `Fleet`
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `program` | `enum` | programme ou flotte couverte |
+| `enginesCovered` | `number` | nombre de moteurs couverts |
+| `aircraftCovered` | `number` | nombre d'avions couverts |
+| `base` | `string` | base opérationnelle principale |
+
+### 4.5.4 Objet `Documents`
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `sourcePdf` | `string` | nom ou référence du PDF source |
+| `summaryAi` | `enum` | statut ou disponibilité de la synthèse IA |
+| `importantPages` | `number[]` | pages principales identifiées dans le document |
+
+### 4.5.5 Objet `Widget`
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | identifiant widget unique |
+| `name` | `string` | libellé métier du widget |
+| `type` | `string` | type de widget (`fields`, `table`, `article`) |
+| `status` | `enum` | statut du widget |
+| `lastStatusChange` | `date` | date du dernier changement de statut |
+| `readAccess` | `enum` | niveau de lecture autorisé |
+| `editAccess` | `enum` | niveau d'édition autorisé |
+| `data` | `object` | contenu métier du widget |
+
+### 4.5.6 Objet `PdfSimulation`
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `title` | `string` | titre de la projection documentaire |
+| `pages` | `array` | extraits de pages simulées |
 
 ## 4.6 Typologie des widgets
 
@@ -233,7 +364,25 @@ erDiagram
 | `table` | `{ items: [{ label, value }] }` | saisie verticale de lignes |
 | `article` | `{ paragraphs: string[] }` | texte structuré |
 
-## 4.7 Hydratation métier
+## 4.7 Objet `Referential`
+
+La Console API manipule chaque référentiel racine comme une ressource de premier niveau.
+
+Définition alignée sur la Console API :
+
+| Champ | Type | Description |
+| --- | --- | --- |
+| `key` | `string` | nom technique du référentiel racine |
+| `values[]` | `string` | valeur autorisée dans la liste du référentiel |
+
+Un référentiel est utilisé pour :
+
+- alimenter les listes déroulantes ;
+- normaliser les valeurs de saisie ;
+- supporter les routes `GET /api/<referential>` et `PUT /api/<referential>` ;
+- piloter les choix disponibles dans la modal contrat et la page `Référentiels`.
+
+## 4.8 Hydratation métier
 
 Les contrats stockent un `customerId`. La vue front hydrate ensuite un objet `customer` complet pour l'affichage.
 
@@ -266,7 +415,6 @@ Le cœur de l'application est porté par :
 | `style.css` | styles de l'application |
 | `data.json` | seed initial du dataset |
 | `docs.md` | documentation affichée dans la vue `Docs` |
-| `specs.md` | spécification fonctionnelle de référence projet |
 
 ## 5.3 État front principal
 
@@ -277,16 +425,18 @@ Le front centralise son état dans un objet `state`.
 | Clé | Rôle |
 | --- | --- |
 | `customers` | référentiel clients courant |
-| `lists` | objet regroupant tous les référentiels racine hors `customers` et `contracts` |
+| `referentials` | objet regroupant tous les référentiels racine hors `customers` et `contracts` |
 | `contracts` | liste des contrats courants |
 | `filteredContracts` | projection filtrée de `contracts` |
 | `selectedContractId` | contrat actif |
 | `activeView` | vue courante |
 | `activeReferentialTab` | référentiel actif dans la page `Référentiels` |
 | `contractModalMode` | mode `edit` ou `create` |
-| `draftContract` | brouillon de création |
-| `contractFormErrors` | erreurs de validation du formulaire de création |
+| `draftContract` | brouillon courant de création ou d'édition |
+| `contractFormErrors` | erreurs de validation du formulaire contrat |
 | `columnFilters` | filtres du tableau contrats |
+| `apiRoute` | route active dans la Console API |
+| `apiRequestBody` | corps JSON éditable de la requête API locale |
 
 ## 5.4 Persistance locale
 
@@ -317,7 +467,7 @@ Comportement :
 
 ### `localStorage`
 
-`localStorage` est utilisé uniquement pour la largeur du panneau de prévisualisation via la clé `previewSidebarWidth`.
+`localStorage` est utilisé pour les préférences purement UI, notamment la largeur relative des colonnes de la Console API via la clé `apiConsoleResponseWidth`.
 
 ## 5.5 Flux de chargement
 
@@ -361,10 +511,11 @@ flowchart TD
 | Filtrage contrat | filtres par référence, contrat, client, type, région, statut |
 | Client affiché | hydratation via `customerId` |
 | Création contrat | bouton `plus`, brouillon avec valeurs par défaut |
-| Validation création | champs obligatoires + contrôle simple des dates |
-| Edition contrat | édition inline via modal compacte |
+| Validation formulaire contrat | champs obligatoires + contrôle simple des dates en création et édition |
+| Edition contrat | brouillon modal avec sauvegarde explicite |
+| Suppression contrat | action dédiée depuis le footer de la modal d'édition |
 | Référentiels | édition locale de `customers` et des listes racine |
-| Console API | expose l'état courant, y compris les modifications locales |
+| Console API | lit et modifie réellement l'état courant en IndexedDB |
 | Documentation | rend `docs.md` dans l'application |
 | Persistance locale | via IndexedDB |
 
@@ -372,9 +523,9 @@ flowchart TD
 
 - Le parser Markdown est fait maison et couvre un sous-ensemble utile de Markdown.
 - Les diagrammes Mermaid sont rendus à la volée dans l'onglet `Docs`.
-- La console API est purement locale et reflète l'état front courant.
+- La console API est purement locale, sans backend distant, et reflète le snapshot IndexedDB courant.
 - Les listes déroulantes sont alimentées depuis les référentiels racine.
-- Le panneau de preview est redimensionnable avec persistance locale.
+- Les colonnes `Request` et `Response` de la Console API sont redimensionnables avec persistance locale.
 
 ## 8. Limites actuelles
 
@@ -382,7 +533,7 @@ flowchart TD
 - Les modifications IndexedDB masquent les évolutions futures de `data.json` tant qu'aucune réinitialisation n'est faite.
 - Les suppressions dans les référentiels ne sont pas sécurisées par des contrôles d'intégrité relationnelle.
 - Les droits d'accès décrits dans la spécification ne sont pas implémentés de manière sécurisée.
-- Les exports sont simulés dans la console API mais il n'y a pas d'export fichier natif.
+- Les exports sont exposés sous forme JSON dans la Console API mais il n'y a pas d'export fichier natif.
 
 ## 9. Recommandations d'évolution
 
