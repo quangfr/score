@@ -309,7 +309,7 @@
       }
 
       function widgetStatusClass(status) {
-        return ["Valid", "Closed"].includes(status) ? "status-valid" : "status-warning";
+        return ["Valid", "Validé", "Closed", "Clos"].includes(status) ? "status-valid" : "status-warning";
       }
 
       function buildOptions(select, values) {
@@ -1189,7 +1189,7 @@
           status: getListOptions("contractStatuses")[1] || "Brouillon",
           startDate: today,
           endDate: nextYear,
-          globalValidationStatus: getListOptions("validationStatuses")[0] || "Draft",
+          globalValidationStatus: getListOptions("validationStatuses")[0] || "À vérifier",
           managingTeam: {
             name: "",
             company: getListOptions("managingCompanies")[0] || "",
@@ -1343,7 +1343,7 @@
           <div class="stack compact-stack">
             <div class="modal-head-topline">
               <h2>${state.contractModalMode === "create" ? "Nouveau contrat" : escapeHtml(contract.name || "Contrat")}</h2>
-              <span class="pill ${widgetStatusClass(contract.globalValidationStatus)}">${escapeHtml(contract.globalValidationStatus || "Draft")}</span>
+              <span class="pill ${widgetStatusClass(contract.globalValidationStatus)}">${escapeHtml(contract.globalValidationStatus || "À vérifier")}</span>
             </div>
             <div class="subtle">${escapeHtml(contract.id)} · ${escapeHtml(contract.type || "")}</div>
           </div>
@@ -1801,7 +1801,7 @@
           ["name", "string", "Support long terme A320neo Europe", "yes", "Business contract label."],
           ["type", "enum", "T&M", "yes", "Contract type referential value."],
           ["status", "enum", "Actif", "yes", "Current business status."],
-          ["globalValidationStatus", "enum", "Valid", "yes", "Global validation status."],
+          ["globalValidationStatus", "enum", "Validé", "yes", "Global validation status."],
           ["customer", "object", "{...}", "yes", "Hydrated customer object."],
           ["region", "enum", "Europe", "yes", "Contract operating region."],
           ["startDate", "date", "2024-01-01", "yes", "Contract start date."],
@@ -1819,7 +1819,7 @@
           ["status", "enum", "Actif", "yes", "Business status."],
           ["startDate", "date", "2024-01-01", "yes", "Contract start date."],
           ["endDate", "date", "2028-12-31", "yes", "Contract end date."],
-          ["globalValidationStatus", "enum", "Valid", "yes", "Validation status."],
+          ["globalValidationStatus", "enum", "Validé", "yes", "Validation status."],
           ["managingTeam", "object", "{...}", "yes", "Managing team and contacts."],
           ["financials", "object", "{...}", "yes", "Financial data block."],
           ["fleet", "object", "{...}", "yes", "Fleet and engine coverage."],

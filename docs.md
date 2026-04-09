@@ -198,7 +198,7 @@ Schéma logique actuel :
 | `contractTypes` | `string[]` | types de contrat |
 | `regions` | `string[]` | zones géographiques |
 | `contractStatuses` | `string[]` | statuts métier contrat |
-| `validationStatuses` | `string[]` | statuts de validation globaux |
+| `validationStatuses` | `string[]` | statuts globaux de validation, distincts du statut métier du contrat |
 | `currencies` | `string[]` | devises |
 | `billingModels` | `string[]` | modèles de facturation |
 | `programs` | `string[]` | programmes / flottes |

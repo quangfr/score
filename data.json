@@ -14,7 +14,7 @@
   "contractTypes": ["T&M", "RPFH", "GTA", "License"],
   "regions": ["Africa", "Americas", "APAC", "Europe", "Middle East"],
   "contractStatuses": ["Actif", "Brouillon", "Clos", "À renouveler"],
-  "validationStatuses": ["Draft", "Non applicable", "Ready for validation", "Valid"],
+  "validationStatuses": ["À vérifier", "Non applicable", "Prêt pour validation", "Validé"],
   "currencies": ["EUR", "USD"],
   "billingModels": ["Annual license", "Global Technical Assistance", "Rate per Flight Hour", "Time and Material"],
   "programs": ["A220", "A320ceo", "A320neo", "A321neo", "A350", "A380", "B737MAX", "B737NG", "B787"],
@@ -33,7 +33,7 @@
       "status": "Actif",
       "startDate": "2024-01-01",
       "endDate": "2028-12-31",
-      "globalValidationStatus": "Valid",
+      "globalValidationStatus": "Validé",
       "managingTeam": {
         "name": "Customer Support Paris",
         "company": "Safran Aircraft Engines",
@@ -133,7 +133,7 @@
       "status": "Actif",
       "startDate": "2024-06-01",
       "endDate": "2030-05-31",
-      "globalValidationStatus": "Draft",
+      "globalValidationStatus": "À vérifier",
       "managingTeam": {
         "name": "Customer Team Doha",
         "company": "Safran Aircraft Engines",
@@ -218,7 +218,7 @@
       "status": "Actif",
       "startDate": "2025-02-15",
       "endDate": "2027-02-14",
-      "globalValidationStatus": "Ready for validation",
+      "globalValidationStatus": "Prêt pour validation",
       "managingTeam": {
         "name": "Americas Contract Office",
         "company": "Safran Aircraft Engines",
@@ -303,7 +303,7 @@
       "status": "À renouveler",
       "startDate": "2023-09-01",
       "endDate": "2026-08-31",
-      "globalValidationStatus": "Valid",
+      "globalValidationStatus": "Validé",
       "managingTeam": {
         "name": "Digital Solutions APAC",
         "company": "Safran Aircraft Engines",
@@ -473,7 +473,7 @@
       "status": "Actif",
       "startDate": "2025-01-10",
       "endDate": "2029-01-09",
-      "globalValidationStatus": "Valid",
+      "globalValidationStatus": "Validé",
       "managingTeam": {
         "name": "Central Europe Service Desk",
         "company": "Safran Aircraft Engines",
@@ -551,7 +551,7 @@
       "status": "Actif",
       "startDate": "2025-04-01",
       "endDate": "2031-03-31",
-      "globalValidationStatus": "Ready for validation",
+      "globalValidationStatus": "Prêt pour validation",
       "managingTeam": {
         "name": "Premium Fleet Desk Dubai",
         "company": "Safran Aircraft Engines",
@@ -629,7 +629,7 @@
       "status": "Brouillon",
       "startDate": "2026-01-01",
       "endDate": "2028-12-31",
-      "globalValidationStatus": "Draft",
+      "globalValidationStatus": "À vérifier",
       "managingTeam": {
         "name": "North Europe Field Support",
         "company": "Safran Aircraft Engines",
@@ -707,7 +707,7 @@
       "status": "Actif",
       "startDate": "2026-02-01",
       "endDate": "2029-01-31",
-      "globalValidationStatus": "Valid",
+      "globalValidationStatus": "Validé",
       "managingTeam": {
         "name": "Digital Products Tokyo",
         "company": "Safran Aircraft Engines",
@@ -785,7 +785,7 @@
       "status": "Actif",
       "startDate": "2026-03-01",
       "endDate": "2030-02-28",
-      "globalValidationStatus": "Ready for validation",
+      "globalValidationStatus": "Prêt pour validation",
       "managingTeam": {
         "name": "East Med Support Unit",
         "company": "Safran Aircraft Engines",
