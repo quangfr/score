@@ -1,18 +1,18 @@
-# Documentation de la Contrathèque
+# Documentation de SCORE
 
 ## 1. Objectif métier
 
-La Contrathèque est une application web monopage destinée à structurer, consulter et enrichir un référentiel de contrats de services et de support du périmètre civil.
+SCORE est une application de gestion de contrats pour moteurs d'avions, destinée à structurer, consulter et enrichir un référentiel de contrats de services et de support pour les compagnies aériennes et leurs flottes motorisées.
 
 Elle répond à un besoin métier simple :
 
 - sortir d'une logique de consultation exclusivement PDF ;
-- consolider les données contractuelles dans un référentiel homogène ;
-- rendre les informations utiles plus accessibles aux équipes métier ;
-- fournir un socle de données réutilisable par d'autres usages ou outils ;
+- consolider les données contractuelles liées aux moteurs d'avions dans un référentiel homogène ;
+- rendre les informations utiles plus accessibles aux équipes support, flotte, facturation et gestion de contrats ;
+- fournir un socle de données réutilisable par d'autres usages ou outils du SI ;
 - administrer les référentiels nécessaires à la qualité de saisie.
 
-Le PDF contractuel reste la source documentaire de référence. L'application n'a pas vocation à remplacer le document juridique original ; elle expose une représentation structurée, éditable et filtrable des informations de gestion.
+Le PDF contractuel reste la source documentaire de référence. SCORE n'a pas vocation à remplacer le document juridique original ; l'application expose une représentation structurée, éditable et filtrable des informations de gestion utiles au pilotage de contrats moteur.
 
 ## 2. Périmètre fonctionnel actuel
 

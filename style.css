@@ -13,7 +13,6 @@
   --ok: #157347;
   --warn: #a16207;
   --shadow: 0 22px 60px rgba(18, 62, 128, 0.12);
-  --preview-width: 520px;
 }
 
 * {
@@ -38,7 +37,7 @@ select {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 220px minmax(320px, 1fr) minmax(360px, var(--preview-width));
+  grid-template-columns: 220px minmax(320px, 1fr);
   min-height: 100vh;
 }
 
@@ -77,10 +76,14 @@ select {
 }
 
 .nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.06);
+  color: #fff;
   font-weight: 600;
   cursor: pointer;
 }
@@ -98,24 +101,7 @@ select {
   grid-column: 2 / -1;
 }
 
-.preview-sidebar {
-  position: relative;
-  padding: 16px 16px 16px 0;
-}
-
-.preview-resizer {
-  position: absolute;
-  top: 16px;
-  left: -10px;
-  width: 20px;
-  height: calc(100vh - 32px);
-  cursor: col-resize;
-  z-index: 3;
-}
-
 .panel,
-.preview-panel,
-.console-panel,
 .modal-body {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -124,9 +110,7 @@ select {
   backdrop-filter: blur(12px);
 }
 
-.panel,
-.preview-panel,
-.console-panel {
+.panel {
   height: calc(100vh - 32px);
   overflow: hidden;
 }
@@ -141,7 +125,6 @@ select {
 }
 
 .panel-head,
-.preview-head,
 .console-head,
 .modal-head {
   display: flex;
@@ -153,7 +136,6 @@ select {
 }
 
 .panel-head h1,
-.preview-head h2,
 .console-head h2,
 .modal-head h2 {
   margin: 0;
@@ -307,6 +289,12 @@ select {
 
 .danger-button {
   background: rgba(180, 35, 24, 0.08);
+  color: #b42318;
+}
+
+.danger-outline-button {
+  border: 1px solid rgba(180, 35, 24, 0.24);
+  background: rgba(180, 35, 24, 0.06);
   color: #b42318;
 }
 
@@ -579,21 +567,9 @@ select {
   cursor: pointer;
 }
 
-.preview-panel,
-.console-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.preview-content,
 .console-content {
   padding: 14px 16px 16px;
   overflow: auto;
-}
-
-.preview-content {
-  display: grid;
-  gap: 10px;
 }
 
 .contract-sheet {
@@ -758,9 +734,21 @@ select {
 
 .modal-actions-row {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
   align-items: center;
+}
+
+.modal-actions-left,
+.modal-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-actions-right {
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .widget-inline-meta {
@@ -853,6 +841,157 @@ select {
   gap: 6px;
 }
 
+.compact-console-content {
+  padding: 8px;
+}
+
+.api-explorer {
+  display: grid;
+  grid-template-columns: minmax(320px, var(--api-response-width, 58%)) 10px minmax(320px, 1fr);
+  gap: 0;
+  min-height: 100%;
+}
+
+.api-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid rgba(68, 110, 180, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.62);
+  overflow: hidden;
+}
+
+.api-response-panel {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.api-request-panel {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.api-splitter {
+  cursor: col-resize;
+  background: linear-gradient(180deg, rgba(68, 110, 180, 0.08), rgba(68, 110, 180, 0.18), rgba(68, 110, 180, 0.08));
+  border-radius: 999px;
+  margin: 6px 0;
+}
+
+.api-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(68, 110, 180, 0.12);
+}
+
+.api-panel-head h3,
+.api-definition-card p,
+.api-definition-title {
+  margin: 0;
+}
+
+.api-panel-body {
+  display: grid;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  overflow: auto;
+}
+
+.api-kicker,
+.api-section-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.api-definition-card,
+.api-body-card {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(68, 110, 180, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.api-definition-summary {
+  display: grid;
+  gap: 2px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.api-definition-summary::-webkit-details-marker {
+  display: none;
+}
+
+.api-definition-card:not([open]) {
+  gap: 0;
+}
+
+.api-definition-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.api-method-route {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px;
+}
+
+.api-method-badge,
+.api-route-box {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(68, 110, 180, 0.16);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.api-method-badge {
+  min-width: 60px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.api-route-box {
+  font-family: "Consolas", "SFMono-Regular", monospace;
+}
+
+.api-pre {
+  margin: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(68, 110, 180, 0.12);
+  background: #0f1b33;
+  color: #eef5ff;
+  overflow: auto;
+}
+
+.api-request-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.api-request-textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(68, 110, 180, 0.12);
+  background: #0f1b33;
+  color: #eef5ff;
+  resize: vertical;
+  font-family: "Consolas", "SFMono-Regular", monospace;
+}
+
 .endpoint-button {
   padding: 8px 10px;
   border: 1px solid var(--line);
@@ -887,7 +1026,7 @@ select {
 }
 
 .action-button {
-  padding: 9px 12px;
+  padding: 8px 11px;
   background: var(--accent);
   color: #fff;
 }
@@ -1069,20 +1208,6 @@ pre {
   .app-shell.docs-mode {
     grid-template-columns: 200px 1fr;
   }
-
-  .preview-resizer {
-    display: none;
-  }
-
-  .preview-sidebar {
-    grid-column: 1 / -1;
-    padding: 0 16px 16px;
-  }
-
-  .preview-panel {
-    height: auto;
-    max-height: 65vh;
-  }
 }
 
 @media (max-width: 860px) {
@@ -1096,8 +1221,7 @@ pre {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .main,
-  .preview-sidebar {
+  .main {
     padding: 12px;
   }
 
@@ -1109,9 +1233,15 @@ pre {
     grid-template-columns: 1fr;
   }
 
-  .panel,
-  .preview-panel,
-  .console-panel {
+  .api-explorer {
+    grid-template-columns: 1fr;
+  }
+
+  .api-splitter {
+    display: none;
+  }
+
+  .panel {
     height: auto;
   }
 }

@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contrats</title>
+    <title>SCORE</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar">
-        <div class="brand">Contrathèque</div>
+        <div class="brand">SCORE</div>
         <nav class="nav">
           <div class="nav-group-label">Navigation</div>
-          <button class="nav-item active" type="button" data-view="contracts">Contrats</button>
-          <button class="nav-item" type="button" data-view="referentials">Référentiels</button>
-          <button class="nav-item" type="button" data-view="docs">Docs</button>
+          <button class="nav-item active" type="button" data-view="contracts"><span data-lucide="folder"></span><span>Contrats</span></button>
+          <button class="nav-item" type="button" data-view="referentials"><span data-lucide="listTree"></span><span>Référentiels</span></button>
+          <button class="nav-item" type="button" data-view="docs"><span data-lucide="fileText"></span><span>Docs</span></button>
           <div class="nav-group-label">Outils</div>
-          <button class="nav-item" type="button" data-view="api">Console API</button>
+          <button class="nav-item" type="button" data-view="api"><span data-lucide="blocks"></span><span>Console API</span></button>
         </nav>
       </aside>
 
@@ -62,39 +62,12 @@
           </div>
           <div id="referentialsContent" class="referentials-content"></div>
         </section>
+
+        <section id="apiConsole" class="panel hidden">
+          <div id="apiConsoleContent" class="console-content compact-console-content"></div>
+        </section>
       </main>
 
-      <aside id="previewSidebar" class="preview-sidebar hidden">
-        <div id="previewResizer" class="preview-resizer" aria-hidden="true"></div>
-        <section id="previewPanel" class="preview-panel">
-          <div class="preview-head">
-            <h2>Prévisualisation</h2>
-            <button id="openPreviewModalButton" class="icon-button" type="button" aria-label="Ouvrir en plein écran">
-              <span data-lucide="fullscreen"></span>
-            </button>
-          </div>
-          <div id="contractPreview" class="preview-content"></div>
-        </section>
-
-        <section id="apiConsole" class="console-panel hidden">
-          <div class="console-head">
-            <h2>Console API</h2>
-          </div>
-          <div class="console-content">
-            <div class="console-toolbar">
-              <div id="apiEndpointButtons" class="console-actions"></div>
-              <div id="apiRoute" class="console-route"></div>
-              <div class="console-actions">
-                <select id="apiContractSelect">
-                  <option value="">Contrat</option>
-                </select>
-              </div>
-              <div id="apiMeta" class="console-meta"></div>
-            </div>
-            <pre id="jsonPayload"></pre>
-          </div>
-        </section>
-      </aside>
     </div>
 
     <div id="contractModal" class="modal" aria-hidden="true">
@@ -124,7 +97,9 @@
         contracts: [],
         filteredContracts: [],
         selectedContractId: null,
-        apiEndpoint: "list",
+        apiEndpoint: "contracts-get-list",
+        apiResponseState: null,
+        apiRequestDrafts: {},
         activeView: "contracts",
         activeReferentialTab: "customers",
         docsMarkdown: "",
@@ -160,27 +135,19 @@
         contractsView: document.getElementById("contractsView"),
         docsView: document.getElementById("docsView"),
         referentialsView: document.getElementById("referentialsView"),
+        apiView: document.getElementById("apiConsole"),
         searchInput: document.getElementById("searchInput"),
         statusFilter: document.getElementById("statusFilter"),
         typeFilter: document.getElementById("typeFilter"),
         contractsCount: document.getElementById("contractsCount"),
         contractsList: document.getElementById("contractsList"),
         openCreateContractModalButton: document.getElementById("openCreateContractModalButton"),
-        contractPreview: document.getElementById("contractPreview"),
-        jsonPayload: document.getElementById("jsonPayload"),
-        apiEndpointButtons: document.getElementById("apiEndpointButtons"),
+        apiConsoleContent: document.getElementById("apiConsoleContent"),
         apiContractSelect: document.getElementById("apiContractSelect"),
-        apiRoute: document.getElementById("apiRoute"),
-        apiMeta: document.getElementById("apiMeta"),
-        apiConsole: document.getElementById("apiConsole"),
-        openPreviewModalButton: document.getElementById("openPreviewModalButton"),
         closeContractModalButton: document.getElementById("closeContractModalButton"),
         contractModal: document.getElementById("contractModal"),
         contractModalHeader: document.getElementById("contractModalHeader"),
         contractModalContent: document.getElementById("contractModalContent"),
-        previewResizer: document.getElementById("previewResizer"),
-        previewSidebar: document.getElementById("previewSidebar"),
-        previewPanel: document.getElementById("previewPanel"),
         docsContent: document.getElementById("docsContent"),
         referentialsContent: document.getElementById("referentialsContent"),
         referentialsCount: document.getElementById("referentialsCount"),
@@ -256,6 +223,55 @@
             <rect x="3" y="14" width="7" height="7" rx="1"></rect>
           </svg>
         `,
+        mapPinned: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 17v5"></path>
+            <path d="M9 3h6l3 7-6 3-6-3z"></path>
+          </svg>
+        `,
+        circleDollarSign: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path>
+            <path d="M12 18V6"></path>
+          </svg>
+        `,
+        listTree: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12h-8"></path>
+            <path d="M21 6H8"></path>
+            <path d="M21 18h-8"></path>
+            <path d="M3 6h.01"></path>
+            <path d="M3 12h.01"></path>
+            <path d="M3 18h.01"></path>
+          </svg>
+        `,
+        shieldCheck: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        `,
+        badgeEuro: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 8h8"></path>
+            <path d="M7 12h7"></path>
+            <path d="M14 18a5 5 0 1 1 0-10"></path>
+            <path d="M12 2 4 5v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V5z"></path>
+          </svg>
+        `,
+        building: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <path d="M9 22v-4h6v4"></path>
+            <path d="M8 6h.01"></path>
+            <path d="M16 6h.01"></path>
+            <path d="M8 10h.01"></path>
+            <path d="M16 10h.01"></path>
+            <path d="M8 14h.01"></path>
+            <path d="M16 14h.01"></path>
+          </svg>
+        `,
       };
 
       const formatDate = (value) =>
@@ -304,6 +320,9 @@
       }
 
       function buildContractSelectOptions() {
+        if (!elements.apiContractSelect) {
+          return;
+        }
         elements.apiContractSelect.innerHTML = `
           <option value="">Contrat sélectionné</option>
           ${state.contracts
@@ -815,6 +834,270 @@
         );
       }
 
+      function getReferentialPresentation(key) {
+        const dictionary = {
+          customers: { label: "Clients", icon: "users" },
+          contractTypes: { label: "Types de contrat", icon: "folder" },
+          regions: { label: "Régions", icon: "mapPinned" },
+          contractStatuses: { label: "Statuts contrat", icon: "badgeEuro" },
+          validationStatuses: { label: "Statuts de validation", icon: "shieldCheck" },
+          currencies: { label: "Devises", icon: "circleDollarSign" },
+          billingModels: { label: "Modèles de facturation", icon: "wallet" },
+          programs: { label: "Programmes", icon: "plane" },
+          summaryStatuses: { label: "Statuts de résumé IA", icon: "fileText" },
+          managingCompanies: { label: "Sociétés gestionnaires", icon: "building" },
+          widgetStatuses: { label: "Statuts de widget", icon: "blocks" },
+          widgetReadAccesses: { label: "Accès lecture widget", icon: "listTree" },
+          widgetEditAccesses: { label: "Accès édition widget", icon: "listTree" },
+        };
+
+        return dictionary[key] || { label: formatLabel(key), icon: "folder" };
+      }
+
+      function getDatasetSnapshotWithHydration() {
+        return {
+          customers: state.customers,
+          ...state.lists,
+          contracts: state.contracts.map((contract) => hydrateContract(contract)),
+        };
+      }
+
+      function buildContractSummary(contract) {
+        const hydratedContract = hydrateContract(contract);
+        return {
+          id: contract.id,
+          name: contract.name,
+          type: contract.type,
+          status: contract.status,
+          globalValidationStatus: contract.globalValidationStatus,
+          customer: hydratedContract.customer,
+          region: contract.region,
+          startDate: contract.startDate,
+          endDate: contract.endDate,
+        };
+      }
+
+      function getApiDefaultDraft(spec) {
+        const sample = spec.requestSample?.body ?? spec.requestSample?.query ?? spec.requestSample?.params ?? {};
+        return JSON.stringify(sample, null, 2);
+      }
+
+      function ensureApiRequestDraft(endpointId, specs) {
+        if (state.apiRequestDrafts[endpointId] !== undefined) {
+          return state.apiRequestDrafts[endpointId];
+        }
+
+        const spec = specs[endpointId];
+        const draft = getApiDefaultDraft(spec);
+        state.apiRequestDrafts[endpointId] = draft;
+        return draft;
+      }
+
+      function parseApiRequestDraft(text) {
+        const trimmed = String(text || "").trim();
+        if (!trimmed) {
+          return {};
+        }
+
+        return JSON.parse(trimmed);
+      }
+
+      async function commitApiMutation() {
+        await persistDatasetToIndexedDb();
+        refreshDerivedControls();
+      }
+
+      async function executeApiRequest(endpointId) {
+        const specs = getApiEndpointSpecs();
+        const spec = specs[endpointId];
+        if (!spec) {
+          return {
+            route: "UNKNOWN",
+            meta: ["400 Bad Request", "Route inconnue"],
+            payload: { error: "Unknown route" },
+          };
+        }
+
+        const liveRecord = await loadDatasetFromIndexedDb().catch(() => null);
+        if (liveRecord?.payload) {
+          applyDatasetSnapshot(liveRecord.payload);
+        }
+
+        const body = parseApiRequestDraft(state.apiRequestDrafts[endpointId] ?? getApiDefaultDraft(spec));
+        const selectedContract = getApiContract();
+
+        if (endpointId === "contracts-get-list") {
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB read"],
+            payload: {
+              count: state.contracts.length,
+              contracts: state.contracts.map((contract) => buildContractSummary(contract)),
+            },
+          };
+        }
+
+        if (endpointId === "contracts-get-one") {
+          if (!selectedContract) {
+            return {
+              route: `${spec.method} ${spec.path}`,
+              meta: ["404 Not Found", "Content-Type: application/json"],
+              payload: { error: "Contract not found" },
+            };
+          }
+
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB read"],
+            payload: selectedContract,
+          };
+        }
+
+        if (endpointId === "contracts-post") {
+          const nextContract = {
+            ...createEmptyContractDraft(),
+            ...body,
+            managingTeam: { ...createEmptyContractDraft().managingTeam, ...(body.managingTeam || {}) },
+            financials: { ...createEmptyContractDraft().financials, ...(body.financials || {}) },
+            fleet: { ...createEmptyContractDraft().fleet, ...(body.fleet || {}) },
+            documents: { ...createEmptyContractDraft().documents, ...(body.documents || {}) },
+            widgets: Array.isArray(body.widgets) ? body.widgets : [],
+            pdfSimulation: { ...createEmptyContractDraft().pdfSimulation, ...(body.pdfSimulation || {}) },
+          };
+
+          state.contracts.unshift(nextContract);
+          state.selectedContractId = nextContract.id;
+          await commitApiMutation();
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["201 Created", "Content-Type: application/json", "IndexedDB write"],
+            payload: hydrateContract(nextContract),
+          };
+        }
+
+        if (endpointId === "contracts-put") {
+          const targetId = selectedContract?.id || body.id;
+          const contractIndex = state.contracts.findIndex((contract) => contract.id === targetId);
+          if (contractIndex === -1) {
+            return {
+              route: `${spec.method} ${spec.path}`,
+              meta: ["404 Not Found", "Content-Type: application/json"],
+              payload: { error: "Contract not found" },
+            };
+          }
+
+          const currentContract = state.contracts[contractIndex];
+          const updatedContract = {
+            ...currentContract,
+            ...body,
+            managingTeam: { ...currentContract.managingTeam, ...(body.managingTeam || {}) },
+            financials: { ...currentContract.financials, ...(body.financials || {}) },
+            fleet: { ...currentContract.fleet, ...(body.fleet || {}) },
+            documents: { ...currentContract.documents, ...(body.documents || {}) },
+            widgets: Array.isArray(body.widgets) ? body.widgets : currentContract.widgets,
+            pdfSimulation: { ...currentContract.pdfSimulation, ...(body.pdfSimulation || {}) },
+          };
+
+          state.contracts[contractIndex] = updatedContract;
+          await commitApiMutation();
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB write"],
+            payload: hydrateContract(updatedContract),
+          };
+        }
+
+        if (endpointId === "customers-get") {
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB read"],
+            payload: {
+              count: state.customers.length,
+              customers: state.customers,
+            },
+          };
+        }
+
+        if (endpointId === "customers-post") {
+          const nextCustomer = {
+            id: body.id || `CUST-${String(state.customers.length + 1).padStart(3, "0")}`,
+            name: body.name || "",
+            accountCode: body.accountCode || "",
+            country: body.country || "",
+          };
+          state.customers.push(nextCustomer);
+          await commitApiMutation();
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["201 Created", "Content-Type: application/json", "IndexedDB write"],
+            payload: nextCustomer,
+          };
+        }
+
+        if (endpointId === "customers-put") {
+          const targetId = body.id || state.customers[0]?.id;
+          const customerIndex = state.customers.findIndex((customer) => customer.id === targetId);
+          if (customerIndex === -1) {
+            return {
+              route: `${spec.method} ${spec.path}`,
+              meta: ["404 Not Found", "Content-Type: application/json"],
+              payload: { error: "Customer not found" },
+            };
+          }
+          state.customers[customerIndex] = {
+            ...state.customers[customerIndex],
+            ...body,
+          };
+          await commitApiMutation();
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB write"],
+            payload: state.customers[customerIndex],
+          };
+        }
+
+        if (endpointId === "dataset-get") {
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB read"],
+            payload: getDatasetSnapshotWithHydration(),
+          };
+        }
+
+        const referentialMatch = endpointId.match(/^referential-(.+)-(get|put)$/);
+        if (referentialMatch) {
+          const [, referentialKey, action] = referentialMatch;
+          if (action === "get") {
+            return {
+              route: `${spec.method} ${spec.path}`,
+              meta: ["200 OK", "Content-Type: application/json", "IndexedDB read"],
+              payload: {
+                key: referentialKey,
+                values: state.lists[referentialKey] || [],
+              },
+            };
+          }
+
+          const nextValues = Array.isArray(body) ? body : Array.isArray(body.values) ? body.values : [];
+          state.lists[referentialKey] = nextValues;
+          await commitApiMutation();
+          return {
+            route: `${spec.method} ${spec.path}`,
+            meta: ["200 OK", "Content-Type: application/json", "IndexedDB write"],
+            payload: {
+              key: referentialKey,
+              values: state.lists[referentialKey],
+            },
+          };
+        }
+
+        return {
+          route: `${spec.method} ${spec.path}`,
+          meta: ["400 Bad Request", "Content-Type: application/json"],
+          payload: { error: "Unsupported route" },
+        };
+      }
+
       function renderSelectOptions(options, selectedValue) {
         return options
           .map((option) => {
@@ -872,7 +1155,7 @@
       }
 
       function getCurrentModalContract() {
-        if (state.contractModalMode === "create") {
+        if (state.draftContract) {
           return state.draftContract;
         }
         const contract = state.contracts.find((item) => item.id === state.selectedContractId) || null;
@@ -997,10 +1280,7 @@
         }
 
         setValueByPath(contract, path, nextValue);
-        if (state.contractModalMode === "create") {
-          state.contractFormErrors = validateContractDraft(contract);
-        }
-        scheduleDatasetPersist();
+        state.contractFormErrors = validateContractDraft(contract);
       }
 
       function renderEditorField(spec, contract) {
@@ -1269,177 +1549,300 @@
               .join("")}
 
             ${
-              state.contractModalMode === "create"
-                ? `
-                  <div class="sheet-section modal-actions-row">
+              `
+                <div class="sheet-section modal-actions-row">
+                  <div class="modal-actions-left">
+                    ${
+                      state.contractModalMode === "edit"
+                        ? `<button class="table-toolbar-button danger-outline-button" type="button" data-contract-delete>Supprimer</button>`
+                        : `<span></span>`
+                    }
+                  </div>
+                  <div class="modal-actions-right">
                     ${
                       state.contractFormErrors.includes("date-order")
                         ? `<span class="field-error">La date de fin doit être postérieure ou égale à la date de début.</span>`
-                        : `<span></span>`
+                        : ``
                     }
                     <button class="table-toolbar-button subtle-button" type="button" data-contract-cancel>Annuler</button>
-                    <button class="action-button" type="button" data-contract-create>Créer le contrat</button>
+                    <button class="action-button" type="button" data-contract-submit>${state.contractModalMode === "create" ? "Créer" : "Sauvegarder"}</button>
                   </div>
-                `
-                : ""
+                </div>
+              `
             }
           </article>
         `;
       }
 
-      function bindPreviewResize() {
-        const storageKey = "previewSidebarWidth";
-        const minWidth = 360;
-        const maxWidth = 760;
-
-        const applyWidth = (width) => {
-          const nextWidth = Math.min(maxWidth, Math.max(minWidth, width));
-          document.documentElement.style.setProperty("--preview-width", `${nextWidth}px`);
-          localStorage.setItem(storageKey, String(nextWidth));
-        };
-
-        const savedWidth = Number(localStorage.getItem(storageKey));
-        if (savedWidth) {
-          applyWidth(savedWidth);
-        }
-
-        let isResizing = false;
-
-        const stopResize = () => {
-          isResizing = false;
-          document.body.style.userSelect = "";
-          document.body.style.cursor = "";
-        };
-
-        const onPointerMove = (event) => {
-          if (!isResizing || window.innerWidth <= 1180) {
-            return;
-          }
-
-          applyWidth(window.innerWidth - event.clientX);
-        };
-
-        elements.previewResizer.addEventListener("pointerdown", (event) => {
-          if (window.innerWidth <= 1180) {
-            return;
-          }
-
-          isResizing = true;
-          document.body.style.userSelect = "none";
-          document.body.style.cursor = "col-resize";
-          elements.previewResizer.setPointerCapture(event.pointerId);
+      function getApiEndpointSpecs() {
+        const selectedContract = getApiContract();
+        const selectedContractId = selectedContract?.id || ":id";
+        const firstCustomerId = state.customers[0]?.id || ":id";
+        const referentialSpecs = Object.keys(state.lists).flatMap((key) => {
+          const presentation = getReferentialPresentation(key);
+          return [
+            [
+              `referential-${key}-get`,
+              {
+                id: `referential-${key}-get`,
+                label: `${presentation.label}`,
+                method: "GET",
+                path: `/api/${key}`,
+                requestName: `GET ${presentation.label.toUpperCase()}`,
+                requestDescription: `Returns the ${presentation.label.toLowerCase()} referential stored in IndexedDB.`,
+                requestDefinition: [
+                  ["path", "string", `/api/${key}`, "yes", "Direct referential route."],
+                ],
+                requestSample: {
+                  path: `/api/${key}`,
+                },
+                responseName: `${presentation.label.toUpperCase()} RESPONSE`,
+                responseDescription: `Returns the list of values for ${presentation.label.toLowerCase()}.`,
+                responseDefinition: getReferentialDefinitionRows(),
+              },
+            ],
+            [
+              `referential-${key}-put`,
+              {
+                id: `referential-${key}-put`,
+                label: `Update ${presentation.label.toLowerCase()}`,
+                method: "PUT",
+                path: `/api/${key}`,
+                requestName: `UPDATE ${presentation.label.toUpperCase()}`,
+                requestDescription: `Replaces the ${presentation.label.toLowerCase()} referential values in IndexedDB.`,
+                requestDefinition: getReferentialDefinitionRows(),
+                requestSample: {
+                  path: `/api/${key}`,
+                  body: {
+                    values: state.lists[key] || [],
+                  },
+                },
+                responseName: `UPDATE ${presentation.label.toUpperCase()} RESPONSE`,
+                responseDescription: `Returns the persisted values for ${presentation.label.toLowerCase()}.`,
+                responseDefinition: getReferentialDefinitionRows(),
+              },
+            ],
+          ];
         });
 
-        elements.previewResizer.addEventListener("pointerup", stopResize);
-        elements.previewResizer.addEventListener("lostpointercapture", stopResize);
-        window.addEventListener("pointermove", onPointerMove);
-        window.addEventListener("pointerup", stopResize);
-      }
-
-      function buildApiPayload() {
-        const selectedContract = getApiContract();
-
-        if (state.apiEndpoint === "detail") {
-          if (!selectedContract) {
-            return {
-              route: "GET /api/contracts/:id",
-              meta: ["404 Not Found", "Aucun contrat sélectionné"],
-              payload: { error: "Contract not found" },
-            };
-          }
-
-          return {
-            route: `GET /api/contracts/${selectedContract.id}`,
-            meta: ["200 OK", "Content-Type: application/json", "Export one contract"],
-            payload: {
-              exportVersion: "1.0",
-              exportedAt: new Date().toISOString(),
-              route: `/api/contracts/${selectedContract.id}`,
-              contract: selectedContract,
-            },
-          };
-        }
-
-        if (state.apiEndpoint === "customers") {
-          return {
-            route: "GET /api/customers",
-            meta: ["200 OK", "Content-Type: application/json", "Export customers table"],
-            payload: {
-              exportVersion: "1.0",
-              exportedAt: new Date().toISOString(),
-              route: "/api/customers",
-              count: state.customers.length,
-              customers: state.customers,
-            },
-          };
-        }
-
-        if (state.apiEndpoint === "dataset") {
-          return {
-            route: "GET /api/export/data.json",
-            meta: ["200 OK", "Content-Type: application/json", "Export full dataset"],
-            payload: {
-              customers: state.customers,
-              ...state.lists,
-              contracts: state.contracts,
-            },
-          };
-        }
-
         return {
-          route: "GET /api/contracts",
-          meta: ["200 OK", "Content-Type: application/json", "Export contracts list"],
-          payload: {
-            exportVersion: "1.0",
-            exportedAt: new Date().toISOString(),
-            route: "/api/contracts",
-            count: state.contracts.length,
-            contracts: state.contracts.map((contract) => {
-              const hydratedContract = hydrateContract(contract);
-              return {
-              id: contract.id,
-              name: contract.name,
-              type: contract.type,
-              status: contract.status,
-              globalValidationStatus: contract.globalValidationStatus,
-              customer: hydratedContract.customer,
-              region: contract.region,
-              startDate: contract.startDate,
-              endDate: contract.endDate,
-              };
-            }),
+          "contracts-get-list": {
+            id: "contracts-get-list",
+            label: "Get contracts list",
+            method: "GET",
+            path: "/api/contracts",
+            requestName: "GET CONTRACTS",
+            requestDescription: "Returns the synthetic contracts list currently available in the local dataset.",
+            requestDefinition: [
+              ["contractId", "string", selectedContractId, "no", "Current selected contract, used only for navigation context."],
+            ],
+            requestSample: {
+              path: "/api/contracts",
+              query: {},
+            },
+            responseName: "GET CONTRACTS RESPONSE",
+            responseDescription: "Synthetic projection of the contracts table with hydrated customer data.",
+            responseDefinition: [
+              ["contracts[]", "object", "{...}", "yes", "Collection of contract summary objects."],
+              ...getContractSummaryDefinitionRows(),
+            ],
           },
+          "contracts-get-one": {
+            id: "contracts-get-one",
+            label: "Get one contract",
+            method: "GET",
+            path: `/api/contracts/${selectedContractId}`,
+            requestName: "GET CONTRACT BY ID",
+            requestDescription: "Returns the full hydrated contract currently selected in the contracts view.",
+            requestDefinition: [
+              ["id", "string", selectedContractId, "yes", "Identifier of the requested contract."],
+            ],
+            requestSample: {
+              path: `/api/contracts/${selectedContractId}`,
+              params: { id: selectedContractId },
+            },
+            responseName: "GET CONTRACT RESPONSE",
+            responseDescription: "Detailed contract payload including widgets, documents and simulated PDF excerpts.",
+            responseDefinition: [
+              ...getContractDefinitionRows(),
+            ],
+          },
+          "contracts-post": {
+            id: "contracts-post",
+            label: "Create contract",
+            method: "POST",
+            path: "/api/contracts",
+            requestName: "CREATE CONTRACT",
+            requestDescription: "Creates a contract object from the modal creation flow payload.",
+            requestDefinition: getContractDefinitionRows(),
+            requestSample: {
+              path: "/api/contracts",
+              body: state.contracts[0] || null,
+            },
+            responseName: "CREATE CONTRACT RESPONSE",
+            responseDescription: "Returns the created contract persisted in local IndexedDB state.",
+            responseDefinition: getContractDefinitionRows(),
+          },
+          "contracts-put": {
+            id: "contracts-put",
+            label: "Update contract",
+            method: "PUT",
+            path: `/api/contracts/${selectedContractId}`,
+            requestName: "UPDATE CONTRACT",
+            requestDescription: "Updates an existing contract currently available in the local dataset.",
+            requestDefinition: getContractDefinitionRows(),
+            requestSample: {
+              path: `/api/contracts/${selectedContractId}`,
+              body: selectedContract || null,
+            },
+            responseName: "UPDATE CONTRACT RESPONSE",
+            responseDescription: "Returns the updated contract object.",
+            responseDefinition: getContractDefinitionRows(),
+          },
+          "customers-get": {
+            id: "customers-get",
+            label: "List customers",
+            method: "GET",
+            path: "/api/customers",
+            requestName: "GET CUSTOMERS",
+            requestDescription: "Returns the customers referential currently stored in IndexedDB.",
+            requestDefinition: [
+              ["source", "string", "indexeddb", "yes", "Current local source of truth for the UI."],
+            ],
+            requestSample: {
+              path: "/api/customers",
+              query: {},
+            },
+            responseName: "GET CUSTOMERS RESPONSE",
+            responseDescription: "Customer referential used to hydrate contracts and populate selection controls.",
+            responseDefinition: [
+              ["customers[]", "object", "{...}", "yes", "Collection of customer objects."],
+              ...getCustomerDefinitionRows(),
+            ],
+          },
+          "customers-post": {
+            id: "customers-post",
+            label: "Create customer",
+            method: "POST",
+            path: "/api/customers",
+            requestName: "CREATE CUSTOMER",
+            requestDescription: "Creates a customer referential entry from the referentials page.",
+            requestDefinition: getCustomerDefinitionRows(),
+            requestSample: {
+              path: "/api/customers",
+              body: state.customers[0] || null,
+            },
+            responseName: "CREATE CUSTOMER RESPONSE",
+            responseDescription: "Returns the created customer entry.",
+            responseDefinition: getCustomerDefinitionRows(),
+          },
+          "customers-put": {
+            id: "customers-put",
+            label: "Update customer",
+            method: "PUT",
+            path: `/api/customers/${firstCustomerId}`,
+            requestName: "UPDATE CUSTOMER",
+            requestDescription: "Updates an existing customer referential entry.",
+            requestDefinition: getCustomerDefinitionRows(),
+            requestSample: {
+              path: `/api/customers/${firstCustomerId}`,
+              body: state.customers[0] || null,
+            },
+            responseName: "UPDATE CUSTOMER RESPONSE",
+            responseDescription: "Returns the updated customer entry.",
+            responseDefinition: getCustomerDefinitionRows(),
+          },
+          "dataset-get": {
+            id: "dataset-get",
+            label: "Full data.json",
+            method: "GET",
+            path: "/api/export/data.json",
+            requestName: "EXPORT DATASET",
+            requestDescription: "Returns the full current dataset including customers, referentials and contracts.",
+            requestDefinition: [
+              ["scope", "enum", "full", "yes", "Current export scope."],
+            ],
+            requestSample: {
+              path: "/api/export/data.json",
+              query: { scope: "full" },
+            },
+            responseName: "EXPORT DATASET RESPONSE",
+            responseDescription: "Full local snapshot currently persisted in IndexedDB and consumed by the app.",
+            responseDefinition: [
+              ["customers[]", "object", "{...}", "yes", "Customer referential entries."],
+              ...getCustomerDefinitionRows(),
+              ["contracts[]", "object", "{...}", "yes", "Contract objects."],
+              ...getContractDefinitionRows(),
+              ["<referential>[]", "string", "T&M", "yes", "Root referential values exposed at dataset level."],
+            ],
+          },
+          ...Object.fromEntries(referentialSpecs),
         };
       }
 
-      function renderApiEndpointButtons() {
-        const endpoints = [
-          { id: "list", label: "List contracts" },
-          { id: "detail", label: "Get one contract" },
-          { id: "customers", label: "List customers" },
-          { id: "dataset", label: "Full data.json" },
-        ];
-
-        elements.apiEndpointButtons.innerHTML = endpoints
+      function renderApiDefinitionRows(rows) {
+        return rows
           .map(
-            (endpoint) => `
-              <button
-                class="endpoint-button ${endpoint.id === state.apiEndpoint ? "active" : ""}"
-                type="button"
-                data-api-endpoint="${endpoint.id}"
-              >
-                ${escapeHtml(endpoint.label)}
-              </button>
+            ([key, format, example, required, notes]) => `
+              <tr>
+                <td><code>${escapeHtml(key)}</code></td>
+                <td>${escapeHtml(format)}</td>
+                <td>${escapeHtml(required)}</td>
+                <td>${escapeHtml(notes)}</td>
+              </tr>
             `
           )
           .join("");
+      }
 
-        elements.apiEndpointButtons.querySelectorAll("[data-api-endpoint]").forEach((node) => {
-          node.addEventListener("click", () => {
-            state.apiEndpoint = node.dataset.apiEndpoint;
-            renderApiConsole();
-          });
-        });
+      function getContractSummaryDefinitionRows() {
+        return [
+          ["id", "string", "CTR-2024-001", "yes", "Unique contract identifier."],
+          ["name", "string", "Support long terme A320neo Europe", "yes", "Business contract label."],
+          ["type", "enum", "T&M", "yes", "Contract type referential value."],
+          ["status", "enum", "Active", "yes", "Current business status."],
+          ["globalValidationStatus", "enum", "Valid", "yes", "Global validation status."],
+          ["customer", "object", "{...}", "yes", "Hydrated customer object."],
+          ["region", "enum", "Europe", "yes", "Contract operating region."],
+          ["startDate", "date", "2024-01-01", "yes", "Contract start date."],
+          ["endDate", "date", "2028-12-31", "yes", "Contract end date."],
+        ];
+      }
+
+      function getContractDefinitionRows() {
+        return [
+          ["id", "string", "CTR-2024-001", "yes", "Unique contract identifier."],
+          ["name", "string", "Support long terme A320neo Europe", "yes", "Business contract label."],
+          ["type", "enum", "T&M", "yes", "Contract type referential value."],
+          ["customerId", "string", "CUST-001", "yes", "Foreign key to customers."],
+          ["region", "enum", "Europe", "yes", "Operating region."],
+          ["status", "enum", "Active", "yes", "Business status."],
+          ["startDate", "date", "2024-01-01", "yes", "Contract start date."],
+          ["endDate", "date", "2028-12-31", "yes", "Contract end date."],
+          ["globalValidationStatus", "enum", "Valid", "yes", "Validation status."],
+          ["managingTeam", "object", "{...}", "yes", "Managing team and contacts."],
+          ["financials", "object", "{...}", "yes", "Financial data block."],
+          ["fleet", "object", "{...}", "yes", "Fleet and engine coverage."],
+          ["documents", "object", "{...}", "yes", "Document and AI summary metadata."],
+          ["widgets", "array", "[...]", "yes", "Contract widgets."],
+          ["pdfSimulation", "object", "{...}", "no", "Simulated source PDF excerpts."],
+        ];
+      }
+
+      function getCustomerDefinitionRows() {
+        return [
+          ["id", "string", "CUST-001", "yes", "Unique customer identifier."],
+          ["name", "string", "Air France", "yes", "Commercial customer name."],
+          ["accountCode", "string", "AFR-CIV-01", "yes", "Account code used by the organization."],
+          ["country", "string", "France", "yes", "Main customer country."],
+        ];
+      }
+
+      function getReferentialDefinitionRows() {
+        return [
+          ["key", "string", "contractTypes", "yes", "Root referential key."],
+          ["values[]", "string", "T&M", "yes", "Allowed value in the referential list."],
+        ];
       }
 
       function bindContractModalEditor(root) {
@@ -1461,9 +1864,30 @@
           });
         }
 
-        const createButton = root.querySelector("[data-contract-create]");
-        if (createButton) {
-          createButton.addEventListener("click", () => {
+        const deleteButton = root.querySelector("[data-contract-delete]");
+        if (deleteButton) {
+          deleteButton.addEventListener("click", () => {
+            const contractId = state.selectedContractId;
+            const contractIndex = state.contracts.findIndex((contract) => contract.id === contractId);
+            if (contractIndex < 0) {
+              return;
+            }
+
+            state.contracts.splice(contractIndex, 1);
+            state.selectedContractId = state.contracts[0]?.id || null;
+            state.draftContract = null;
+            state.contractFormErrors = [];
+            state.contractModalMode = "edit";
+            state.contractModalTab = "Informations générales";
+            scheduleDatasetPersist();
+            closeContractModal();
+            render();
+          });
+        }
+
+        const submitButton = root.querySelector("[data-contract-submit]");
+        if (submitButton) {
+          submitButton.addEventListener("click", () => {
             const errors = validateContractDraft(state.draftContract);
             state.contractFormErrors = errors;
             if (errors.length) {
@@ -1475,8 +1899,15 @@
               return;
             }
 
-            state.contracts.unshift(structuredClone(state.draftContract));
-            state.selectedContractId = state.draftContract.id;
+            if (state.contractModalMode === "create") {
+              state.contracts.unshift(structuredClone(state.draftContract));
+              state.selectedContractId = state.draftContract.id;
+            } else {
+              const contractIndex = state.contracts.findIndex((contract) => contract.id === state.selectedContractId);
+              if (contractIndex >= 0) {
+                state.contracts[contractIndex] = structuredClone(state.draftContract);
+              }
+            }
             state.draftContract = null;
             state.contractFormErrors = [];
             state.contractModalMode = "edit";
@@ -1490,17 +1921,11 @@
         root.querySelectorAll("[data-field-path]").forEach((node) => {
           const update = () => {
             updateContractField(node.dataset.fieldPath, node.value, node.dataset.fieldFormat);
-            if (state.contractModalMode === "create") {
-              const contract = getHydratedModalContract();
-              renderContractModalHeader(contract);
-              elements.contractModalContent.innerHTML = buildEditableContractModalHtml(contract);
-              bindContractModalEditor(elements.contractModalContent);
-              renderIcons(elements.contractModal);
-              return;
-            }
-
-            render();
-            openContractModal();
+            const contract = getHydratedModalContract();
+            renderContractModalHeader(contract);
+            elements.contractModalContent.innerHTML = buildEditableContractModalHtml(contract);
+            bindContractModalEditor(elements.contractModalContent);
+            renderIcons(elements.contractModal);
           };
 
           node.addEventListener("change", update);
@@ -1701,8 +2126,6 @@
 
       function renderPreview() {
         const contract = getSelectedContract();
-        const previewHtml = buildPreviewHtml(contract);
-        elements.contractPreview.innerHTML = previewHtml;
         renderContractModalHeader(getHydratedModalContract() || contract);
         elements.contractModalContent.innerHTML = buildEditableContractModalHtml(getHydratedModalContract() || contract);
         bindContractModalEditor(elements.contractModalContent);
@@ -1710,13 +2133,214 @@
       }
 
       function renderApiConsole() {
-        renderApiEndpointButtons();
-        elements.apiContractSelect.value = state.selectedContractId || "";
+        const specs = getApiEndpointSpecs();
+        const current = specs[state.apiEndpoint] || Object.values(specs)[0];
+        ensureApiRequestDraft(current.id, specs);
+        const apiState = state.apiResponseState || {
+          route: `${current.method} ${current.path}`,
+          meta: ["Ready", "Awaiting request"],
+          payload: {},
+        };
+        const showContractSelector = ["contracts-get-one", "contracts-put"].includes(state.apiEndpoint);
+        const splitterWidth = localStorage.getItem("apiConsoleResponseWidth") || "58%";
 
-        const apiState = buildApiPayload();
-        elements.apiRoute.textContent = apiState.route;
-        elements.apiMeta.innerHTML = apiState.meta.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join("");
-        elements.jsonPayload.textContent = JSON.stringify(apiState.payload, null, 2);
+        elements.apiConsoleContent.innerHTML = `
+          <div class="api-explorer" id="apiExplorer" style="--api-response-width:${escapeHtml(splitterWidth)};">
+            <section class="api-panel api-response-panel">
+              <div class="api-panel-head">
+                <div class="stack compact-stack">
+                  <h3>Response body</h3>
+                </div>
+                <div class="console-meta">${apiState.meta.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join("")}</div>
+              </div>
+                <div class="api-panel-body">
+                <details class="api-definition-card">
+                  <summary class="api-definition-summary">
+                    <span class="api-section-title">Response definition</span>
+                    <span class="api-definition-title">${escapeHtml(current.responseName)}</span>
+                  </summary>
+                  <p>${escapeHtml(current.responseDescription)}</p>
+                  <div class="referentials-table-wrap">
+                    <table class="referentials-table api-definition-table">
+                      <thead>
+                        <tr>
+                          <th>Key</th>
+                          <th>Format</th>
+                          <th>Required</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${renderApiDefinitionRows(current.responseDefinition)}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+                <div class="api-body-card">
+                  <div class="api-section-title">Body sample</div>
+                  <pre class="api-pre"><code>${escapeHtml(JSON.stringify(apiState.payload, null, 2))}</code></pre>
+                </div>
+              </div>
+            </section>
+
+            <div class="api-splitter" id="apiSplitter" aria-hidden="true"></div>
+
+            <section class="api-panel api-request-panel">
+              <div class="api-panel-head">
+                <div class="stack compact-stack">
+                  <h3>Request</h3>
+                </div>
+              </div>
+              <div class="api-panel-body">
+                <label class="editor-field" for="apiRoute">
+                  <span>Route object</span>
+                  <select id="apiRoute">
+                    ${Object.values(specs)
+                      .map(
+                        (endpoint) => `
+                          <option value="${escapeHtml(endpoint.id)}"${endpoint.id === state.apiEndpoint ? " selected" : ""}>
+                            ${escapeHtml(`${endpoint.label} · ${endpoint.method} ${endpoint.path}`)}
+                          </option>
+                        `
+                      )
+                      .join("")}
+                  </select>
+                </label>
+
+                <div class="api-method-route">
+                  <div class="api-method-badge">${escapeHtml(current.method)}</div>
+                  <div class="api-route-box">${escapeHtml(current.path)}</div>
+                </div>
+
+                ${
+                  showContractSelector
+                    ? `
+                      <label class="editor-field" for="apiContractSelectInline">
+                        <span>Contrat</span>
+                        <select id="apiContractSelectInline">
+                          <option value="">Contrat sélectionné</option>
+                          ${state.contracts
+                            .map(
+                              (contract) => `
+                                <option value="${escapeHtml(contract.id)}"${contract.id === state.selectedContractId ? " selected" : ""}>
+                                  ${escapeHtml(`${contract.id} · ${contract.name}`)}
+                                </option>
+                              `
+                            )
+                            .join("")}
+                        </select>
+                      </label>
+                    `
+                    : ""
+                }
+
+                <details class="api-definition-card">
+                  <summary class="api-definition-summary">
+                    <span class="api-section-title">Request definition</span>
+                    <span class="api-definition-title">${escapeHtml(current.requestName)}</span>
+                  </summary>
+                  <p>${escapeHtml(current.requestDescription)}</p>
+                  <div class="referentials-table-wrap">
+                    <table class="referentials-table api-definition-table">
+                      <thead>
+                        <tr>
+                          <th>Key</th>
+                          <th>Format</th>
+                          <th>Required</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${renderApiDefinitionRows(current.requestDefinition)}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+
+                <div class="api-body-card">
+                  <div class="api-section-title">Body sample</div>
+                  <textarea id="apiRequestBody" class="api-request-textarea">${escapeHtml(state.apiRequestDrafts[current.id] || getApiDefaultDraft(current))}</textarea>
+                </div>
+
+                <div class="api-request-actions">
+                  <button class="action-button" type="button" id="apiSendButton">Send request</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        `;
+
+        const endpointSelect = document.getElementById("apiRoute");
+        if (endpointSelect) {
+          endpointSelect.addEventListener("change", () => {
+            state.apiEndpoint = endpointSelect.value;
+            state.apiResponseState = null;
+            renderApiConsole();
+          });
+        }
+
+        const requestBody = document.getElementById("apiRequestBody");
+        if (requestBody) {
+          requestBody.addEventListener("input", () => {
+            state.apiRequestDrafts[current.id] = requestBody.value;
+          });
+        }
+
+        const contractSelect = document.getElementById("apiContractSelectInline");
+        if (contractSelect) {
+          contractSelect.addEventListener("change", () => {
+            state.selectedContractId = contractSelect.value || state.contracts[0]?.id || null;
+            state.apiResponseState = null;
+            render();
+          });
+        }
+
+        const sendButton = document.getElementById("apiSendButton");
+        if (sendButton) {
+          sendButton.addEventListener("click", async () => {
+            try {
+              if (requestBody) {
+                state.apiRequestDrafts[current.id] = requestBody.value;
+              }
+              state.apiResponseState = await executeApiRequest(current.id);
+              render();
+            } catch (error) {
+              state.apiResponseState = {
+                route: `${current.method} ${current.path}`,
+                meta: ["400 Bad Request", "Invalid JSON body"],
+                payload: { error: error.message },
+              };
+              renderApiConsole();
+            }
+          });
+        }
+
+        const splitter = document.getElementById("apiSplitter");
+        const explorer = document.getElementById("apiExplorer");
+        if (splitter && explorer) {
+          splitter.addEventListener("pointerdown", (event) => {
+            event.preventDefault();
+            splitter.setPointerCapture(event.pointerId);
+            const rect = explorer.getBoundingClientRect();
+
+            const onMove = (moveEvent) => {
+              const raw = ((moveEvent.clientX - rect.left) / rect.width) * 100;
+              const next = Math.min(75, Math.max(25, raw));
+              explorer.style.setProperty("--api-response-width", `${next}%`);
+              localStorage.setItem("apiConsoleResponseWidth", `${next}%`);
+            };
+
+            const stop = () => {
+              splitter.removeEventListener("pointermove", onMove);
+              splitter.removeEventListener("pointerup", stop);
+              splitter.removeEventListener("lostpointercapture", stop);
+            };
+
+            splitter.addEventListener("pointermove", onMove);
+            splitter.addEventListener("pointerup", stop);
+            splitter.addEventListener("lostpointercapture", stop);
+          });
+        }
       }
 
       function renderReferentialsView() {
@@ -1734,6 +2358,7 @@
         const activeKey = state.activeReferentialTab;
         const isCustomers = activeKey === "customers";
         const values = isCustomers ? state.customers : state.lists[activeKey] || [];
+        const activePresentation = getReferentialPresentation(activeKey);
         elements.referentialsCount.textContent = `${tabs.length} référentiels`;
 
         elements.referentialsContent.innerHTML = `
@@ -1741,21 +2366,25 @@
             <div class="referentials-tabs" role="tablist" aria-label="Référentiels">
               ${tabs
                 .map(
-                  (key) => `
+                  (key) => {
+                    const presentation = getReferentialPresentation(key);
+                    return `
                     <button
                       class="referential-tab ${key === activeKey ? "active" : ""}"
                       type="button"
                       data-referential-tab="${escapeHtml(key)}"
                     >
-                      ${escapeHtml(key)}
+                      <span data-lucide="${escapeHtml(presentation.icon)}"></span>
+                      ${escapeHtml(presentation.label)}
                     </button>
                   `
+                  }
                 )
                 .join("")}
             </div>
             <div class="referentials-card">
               <div class="referentials-toolbar">
-                <div class="subtle">${escapeHtml(activeKey)} · ${values.length} entrées</div>
+                <div class="subtle">${escapeHtml(activePresentation.label)} · ${values.length} entrées</div>
                 <button class="action-button" type="button" data-referential-add>${isCustomers ? "Ajouter un client" : "Ajouter une valeur"}</button>
               </div>
               ${
@@ -2055,20 +2684,14 @@
         if (elements.referentialsView) {
           elements.referentialsView.classList.toggle("hidden", !isReferentials);
         }
+        if (elements.apiView) {
+          elements.apiView.classList.toggle("hidden", !isApi);
+        }
         if (elements.docsView) {
           elements.docsView.classList.toggle("hidden", !isDocs);
         }
-        if (elements.previewSidebar) {
-          elements.previewSidebar.classList.toggle("hidden", !(isContracts || isApi));
-        }
-        if (elements.previewPanel) {
-          elements.previewPanel.classList.toggle("hidden", !isContracts);
-        }
-        if (elements.apiConsole) {
-          elements.apiConsole.classList.toggle("hidden", !isApi);
-        }
         if (elements.appShell) {
-          elements.appShell.classList.toggle("docs-mode", !isApi);
+          elements.appShell.classList.add("docs-mode");
         }
 
         elements.navItems.forEach((node) => {
@@ -2113,28 +2736,37 @@
         }
       }
 
-      function openContractModal() {
-        elements.contractModal.classList.add("open");
-        elements.contractModal.setAttribute("aria-hidden", "false");
-      }
-
       function closeContractModal() {
-        if (state.contractModalMode === "create") {
+        if (state.draftContract) {
           state.draftContract = null;
           state.contractFormErrors = [];
           state.contractModalTab = "Informations générales";
           state.contractModalMode = "edit";
-          render();
         }
         elements.contractModal.classList.remove("open");
         elements.contractModal.setAttribute("aria-hidden", "true");
+      }
+
+      function openContractModal() {
+        if (state.contractModalMode !== "create") {
+          const selected = state.contracts.find((item) => item.id === state.selectedContractId) || null;
+          state.contractModalMode = "edit";
+          state.draftContract = selected ? structuredClone(selected) : null;
+          state.contractFormErrors = state.draftContract ? validateContractDraft(state.draftContract) : [];
+          renderContractModalHeader(getHydratedModalContract());
+          elements.contractModalContent.innerHTML = buildEditableContractModalHtml(getHydratedModalContract());
+          bindContractModalEditor(elements.contractModalContent);
+          renderIcons(elements.contractModal);
+        }
+        elements.contractModal.classList.add("open");
+        elements.contractModal.setAttribute("aria-hidden", "false");
       }
 
       function openCreateContractModal() {
         state.contractModalMode = "create";
         state.contractModalTab = "Informations générales";
         state.draftContract = createEmptyContractDraft();
-        state.contractFormErrors = [];
+        state.contractFormErrors = validateContractDraft(state.draftContract);
         renderContractModalHeader(getHydratedModalContract());
         elements.contractModalContent.innerHTML = buildEditableContractModalHtml(getHydratedModalContract());
         bindContractModalEditor(elements.contractModalContent);
@@ -2164,15 +2796,14 @@
         elements.searchInput.addEventListener("input", render);
         elements.statusFilter.addEventListener("change", render);
         elements.typeFilter.addEventListener("change", render);
-        elements.apiContractSelect.addEventListener("change", () => {
-          state.selectedContractId = elements.apiContractSelect.value || state.contracts[0]?.id || null;
-          render();
-        });
+        if (elements.apiContractSelect) {
+          elements.apiContractSelect.addEventListener("change", () => {
+            state.selectedContractId = elements.apiContractSelect.value || state.contracts[0]?.id || null;
+            render();
+          });
+        }
         if (elements.openCreateContractModalButton) {
           elements.openCreateContractModalButton.addEventListener("click", openCreateContractModal);
-        }
-        if (elements.openPreviewModalButton) {
-          elements.openPreviewModalButton.addEventListener("click", openContractModal);
         }
         elements.closeContractModalButton.addEventListener("click", closeContractModal);
         elements.contractModal.addEventListener("click", (event) => {
@@ -2248,7 +2879,6 @@
         }
 
         bindStaticEvents();
-        bindPreviewResize();
         render();
       }
 
