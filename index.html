@@ -13,6 +13,7 @@
         <nav class="nav">
           <div class="nav-group-label">Navigation</div>
           <button class="nav-item active" type="button" data-view="contracts">Contrats</button>
+          <button class="nav-item" type="button" data-view="referentials">Référentiels</button>
           <button class="nav-item" type="button" data-view="docs">Docs</button>
           <div class="nav-group-label">Outils</div>
           <button class="nav-item" type="button" data-view="api">Console API</button>
@@ -25,11 +26,9 @@
             <h1>Contrats</h1>
             <div class="panel-head-actions">
               <span id="contractsCount" class="subtle"></span>
-              <div id="filterModeSwitch" class="segment-control" aria-label="Modes de filtre">
-                <button class="segment-button active" type="button" data-filter-mode="1">1</button>
-                <button class="segment-button" type="button" data-filter-mode="2">2</button>
-                <button class="segment-button" type="button" data-filter-mode="3">3</button>
-              </div>
+              <button id="openCreateContractModalButton" class="icon-button" type="button" aria-label="Créer un contrat">
+                <span data-lucide="plus"></span>
+              </button>
             </div>
           </div>
 
@@ -54,6 +53,14 @@
           <div class="docs-content">
             <div id="docsContent" class="docs-shell docs-prose"></div>
           </div>
+        </section>
+
+        <section id="referentialsView" class="panel hidden">
+          <div class="panel-head">
+            <h1>Référentiels</h1>
+            <span id="referentialsCount" class="subtle"></span>
+          </div>
+          <div id="referentialsContent" class="referentials-content"></div>
         </section>
       </main>
 
@@ -93,7 +100,7 @@
     <div id="contractModal" class="modal" aria-hidden="true">
       <div class="modal-body">
         <div class="modal-head">
-          <h2>Contrat</h2>
+          <div id="contractModalHeader" class="modal-head-main"></div>
           <button id="closeContractModalButton" class="icon-button" type="button" aria-label="Fermer">
             <span data-lucide="x"></span>
           </button>
@@ -113,16 +120,22 @@
 
       const state = {
         customers: [],
+        lists: {},
         contracts: [],
         filteredContracts: [],
         selectedContractId: null,
         apiEndpoint: "list",
         activeView: "contracts",
+        activeReferentialTab: "customers",
         docsMarkdown: "",
-        filterMode: "1",
+        filterMode: "2",
         headerFiltersOpen: false,
         activeHeaderPopover: null,
         popoverSearch: "",
+        contractModalTab: "Informations générales",
+        contractModalMode: "edit",
+        draftContract: null,
+        contractFormErrors: [],
         columnFilters: {
           reference: { text: "" },
           contract: { text: "" },
@@ -133,17 +146,26 @@
         },
       };
 
+      const persistence = {
+        dbName: "contratheque-db",
+        storeName: "appState",
+        snapshotKey: "dataset",
+        db: null,
+        saveTimer: null,
+      };
+
       const elements = {
         appShell: document.querySelector(".app-shell"),
         navItems: [...document.querySelectorAll("[data-view]")],
         contractsView: document.getElementById("contractsView"),
         docsView: document.getElementById("docsView"),
+        referentialsView: document.getElementById("referentialsView"),
         searchInput: document.getElementById("searchInput"),
         statusFilter: document.getElementById("statusFilter"),
         typeFilter: document.getElementById("typeFilter"),
         contractsCount: document.getElementById("contractsCount"),
         contractsList: document.getElementById("contractsList"),
-        filterModeSwitch: document.getElementById("filterModeSwitch"),
+        openCreateContractModalButton: document.getElementById("openCreateContractModalButton"),
         contractPreview: document.getElementById("contractPreview"),
         jsonPayload: document.getElementById("jsonPayload"),
         apiEndpointButtons: document.getElementById("apiEndpointButtons"),
@@ -154,11 +176,14 @@
         openPreviewModalButton: document.getElementById("openPreviewModalButton"),
         closeContractModalButton: document.getElementById("closeContractModalButton"),
         contractModal: document.getElementById("contractModal"),
+        contractModalHeader: document.getElementById("contractModalHeader"),
         contractModalContent: document.getElementById("contractModalContent"),
         previewResizer: document.getElementById("previewResizer"),
         previewSidebar: document.getElementById("previewSidebar"),
         previewPanel: document.getElementById("previewPanel"),
         docsContent: document.getElementById("docsContent"),
+        referentialsContent: document.getElementById("referentialsContent"),
+        referentialsCount: document.getElementById("referentialsCount"),
       };
 
       const lucideIcons = {
@@ -179,6 +204,56 @@
         filter: `
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path>
+          </svg>
+        `,
+        plus: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+        `,
+        folder: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8z"></path>
+            <path d="M2 8h20"></path>
+          </svg>
+        `,
+        users: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <path d="M20 8v6"></path>
+            <path d="M23 11h-6"></path>
+          </svg>
+        `,
+        wallet: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-3"></path>
+            <path d="M3 7h18v10H3z"></path>
+            <path d="M17 12h.01"></path>
+          </svg>
+        `,
+        plane: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m10 10-7 1 1 2 4 1 1 4 2 1 1-7 7-7a1.414 1.414 0 0 0-2-2z"></path>
+            <path d="M17 7 7 17"></path>
+          </svg>
+        `,
+        fileText: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6"></path>
+            <path d="M16 13H8"></path>
+            <path d="M16 17H8"></path>
+            <path d="M10 9H8"></path>
+          </svg>
+        `,
+        blocks: `
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
           </svg>
         `,
       };
@@ -239,6 +314,12 @@
             )
           .join("")}
         `;
+      }
+
+      function refreshDerivedControls() {
+        buildOptions(elements.statusFilter, [...new Set(state.contracts.map((contract) => contract.status))]);
+        buildOptions(elements.typeFilter, [...new Set(state.contracts.map((contract) => contract.type))]);
+        buildContractSelectOptions();
       }
 
       function getFilterOptions(key) {
@@ -507,6 +588,7 @@
       }
 
       function buildPreviewHtml(contract) {
+        const editable = false;
         if (!contract) {
           return `<div class="empty">Aucun contrat</div>`;
         }
@@ -557,32 +639,6 @@
             <div class="preview-meta">
               <div class="subtle">Prévisualisation du contrat et de tous ses widgets</div>
               <span class="tag">${widgets.length} widget${widgets.length > 1 ? "s" : ""}</span>
-            </div>
-
-            <div class="sheet-section">
-              <div class="customer-editor">
-                <label for="customerSearchInput">Client du contrat</label>
-                <div class="customer-editor-row">
-                  <input
-                    id="customerSearchInput"
-                    type="search"
-                    list="customersList"
-                    value="${escapeHtml(contract.customer.name)}"
-                    placeholder="Rechercher un client"
-                  />
-                  <button id="applyCustomerChangeButton" class="action-button" type="button">Mettre à jour</button>
-                </div>
-                <datalist id="customersList">
-                  ${state.customers
-                    .map(
-                      (customer) => `
-                        <option value="${escapeHtml(customer.name)}">${escapeHtml(customer.accountCode)} · ${escapeHtml(customer.country)}</option>
-                      `
-                    )
-                    .join("")}
-                </datalist>
-                <div class="subtle">Table clients: ${state.customers.length} entrées référencées dans le dataset.</div>
-              </div>
             </div>
 
             <div class="sheet-section">
@@ -656,6 +712,573 @@
                         `
                       )
                       .join("")}
+                  </div>
+                `
+                : ""
+            }
+          </article>
+        `;
+      }
+
+      function getListOptions(key) {
+        return state.lists[key] || [];
+      }
+
+      function buildDatasetSnapshot() {
+        return {
+          customers: structuredClone(state.customers),
+          ...structuredClone(state.lists),
+          contracts: structuredClone(state.contracts),
+        };
+      }
+
+      function applyDatasetSnapshot(payload) {
+        state.customers = payload.customers || [];
+        state.lists = getRootReferentials(payload);
+        state.contracts = payload.contracts || [];
+        state.filteredContracts = [...state.contracts];
+        state.selectedContractId = state.contracts[0]?.id || null;
+      }
+
+      function openIndexedDb() {
+        if (persistence.db) {
+          return Promise.resolve(persistence.db);
+        }
+
+        return new Promise((resolve, reject) => {
+          const request = window.indexedDB.open(persistence.dbName, 1);
+
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(persistence.storeName)) {
+              db.createObjectStore(persistence.storeName);
+            }
+          };
+
+          request.onsuccess = () => {
+            persistence.db = request.result;
+            resolve(persistence.db);
+          };
+
+          request.onerror = () => {
+            reject(request.error);
+          };
+        });
+      }
+
+      async function loadDatasetFromIndexedDb() {
+        const db = await openIndexedDb();
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(persistence.storeName, "readonly");
+          const store = transaction.objectStore(persistence.storeName);
+          const request = store.get(persistence.snapshotKey);
+
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async function persistDatasetToIndexedDb() {
+        const db = await openIndexedDb();
+        const snapshot = buildDatasetSnapshot();
+
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(persistence.storeName, "readwrite");
+          const store = transaction.objectStore(persistence.storeName);
+          const request = store.put(
+            {
+              updatedAt: new Date().toISOString(),
+              payload: snapshot,
+            },
+            persistence.snapshotKey
+          );
+
+          request.onsuccess = () => resolve();
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      function scheduleDatasetPersist() {
+        window.clearTimeout(persistence.saveTimer);
+        persistence.saveTimer = window.setTimeout(() => {
+          persistDatasetToIndexedDb().catch((error) => console.error("IndexedDB save failed", error));
+        }, 150);
+      }
+
+      function getReferentialKeys() {
+        return ["customers", ...Object.keys(state.lists)];
+      }
+
+      function getRootReferentials(payload) {
+        return Object.fromEntries(
+          Object.entries(payload).filter(([key]) => !["customers", "contracts"].includes(key))
+        );
+      }
+
+      function renderSelectOptions(options, selectedValue) {
+        return options
+          .map((option) => {
+            const value = typeof option === "string" ? option : option.value;
+            const label = typeof option === "string" ? option : option.label;
+            const selected = String(value) === String(selectedValue) ? " selected" : "";
+            return `<option value="${escapeHtml(value)}"${selected}>${escapeHtml(label)}</option>`;
+          })
+          .join("");
+      }
+
+      function getValueByPath(object, path) {
+        return path.split(".").reduce((current, segment) => current?.[segment], object);
+      }
+
+      function setValueByPath(object, path, value) {
+        const segments = path.split(".");
+        const last = segments.pop();
+        const target = segments.reduce((current, segment) => current?.[segment], object);
+
+        if (!target || !last) {
+          return false;
+        }
+
+        target[last] = value;
+        return true;
+      }
+
+      function parseTextList(value) {
+        return value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      function parseNumberList(value) {
+        return parseTextList(value)
+          .map((item) => Number(item))
+          .filter((item) => Number.isFinite(item));
+      }
+
+      function parseTableItems(value) {
+        return value
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => {
+            const [label, ...rest] = line.split(":");
+            return {
+              label: (label || "").trim(),
+              value: rest.join(":").trim(),
+            };
+          })
+          .filter((item) => item.label);
+      }
+
+      function getCurrentModalContract() {
+        if (state.contractModalMode === "create") {
+          return state.draftContract;
+        }
+        const contract = state.contracts.find((item) => item.id === state.selectedContractId) || null;
+        return contract;
+      }
+
+      function getHydratedModalContract() {
+        return hydrateContract(getCurrentModalContract());
+      }
+
+      function nextContractId() {
+        const currentYear = new Date().getFullYear();
+        const yearContracts = state.contracts.filter((contract) => String(contract.id || "").startsWith(`CTR-${currentYear}-`));
+        const maxSuffix = yearContracts.reduce((max, contract) => {
+          const value = Number(String(contract.id).split("-").pop());
+          return Number.isFinite(value) ? Math.max(max, value) : max;
+        }, 0);
+        return `CTR-${currentYear}-${String(maxSuffix + 1).padStart(3, "0")}`;
+      }
+
+      function createEmptyContractDraft() {
+        const firstCustomer = state.customers[0];
+        const today = new Date().toISOString().slice(0, 10);
+        const nextYear = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10);
+        return {
+          id: nextContractId(),
+          name: "",
+          type: getListOptions("contractTypes")[0] || "",
+          customerId: firstCustomer?.id || "",
+          region: getListOptions("regions")[0] || "",
+          status: getListOptions("contractStatuses")[2] || "Draft",
+          startDate: today,
+          endDate: nextYear,
+          globalValidationStatus: getListOptions("validationStatuses")[0] || "Draft",
+          managingTeam: {
+            name: "",
+            company: getListOptions("managingCompanies")[0] || "",
+            contact: "",
+            email: "",
+            phone: "",
+          },
+          financials: {
+            currency: getListOptions("currencies")[0] || "EUR",
+            billingModel: getListOptions("billingModels")[0] || "",
+            estimatedAnnualValue: 0,
+            rateRevision: "",
+          },
+          fleet: {
+            program: getListOptions("programs")[0] || "",
+            enginesCovered: 0,
+            aircraftCovered: 0,
+            base: "",
+          },
+          documents: {
+            sourcePdf: "",
+            summaryAi: getListOptions("summaryStatuses")[1] || "",
+            importantPages: [],
+          },
+          widgets: [],
+          pdfSimulation: {
+            title: "",
+            pages: [],
+          },
+        };
+      }
+
+      function getRequiredFieldPaths() {
+        return [
+          "name",
+          "type",
+          "customerId",
+          "region",
+          "status",
+          "startDate",
+          "endDate",
+          "managingTeam.name",
+          "managingTeam.contact",
+          "financials.currency",
+          "financials.billingModel",
+          "fleet.program",
+        ];
+      }
+
+      function validateContractDraft(contract) {
+        const requiredPaths = getRequiredFieldPaths();
+        const missing = requiredPaths.filter((path) => {
+          const value = getValueByPath(contract, path);
+          if (typeof value === "number") {
+            return Number.isNaN(value);
+          }
+          return !String(value ?? "").trim();
+        });
+
+        if (contract.startDate && contract.endDate && contract.startDate > contract.endDate) {
+          missing.push("date-order");
+        }
+
+        return missing;
+      }
+
+      function updateContractField(path, rawValue, format) {
+        const contract = getCurrentModalContract();
+        if (!contract) {
+          return;
+        }
+
+        let nextValue = rawValue;
+        if (format === "number") {
+          nextValue = Number(rawValue);
+        }
+        if (format === "number-list") {
+          nextValue = parseNumberList(rawValue);
+        }
+        if (format === "paragraphs") {
+          nextValue = rawValue
+            .split("\n\n")
+            .map((item) => item.trim())
+            .filter(Boolean);
+        }
+        if (format === "table-items") {
+          nextValue = parseTableItems(rawValue);
+        }
+
+        setValueByPath(contract, path, nextValue);
+        if (state.contractModalMode === "create") {
+          state.contractFormErrors = validateContractDraft(contract);
+        }
+        scheduleDatasetPersist();
+      }
+
+      function renderEditorField(spec, contract) {
+        const value = getValueByPath(contract, spec.path);
+        const fieldId = `field-${spec.path.replaceAll(".", "-")}`;
+        const common = `id="${fieldId}" data-field-path="${escapeHtml(spec.path)}" data-field-format="${escapeHtml(spec.format || "string")}"`;
+        const required = state.contractModalMode === "create" && getRequiredFieldPaths().includes(spec.path);
+        const hasError = required && state.contractFormErrors.includes(spec.path);
+
+        let control = "";
+        if (spec.control === "select") {
+          const options = spec.optionsKey === "customers"
+            ? state.customers.map((customer) => ({
+                value: customer.id,
+                label: `${customer.name} · ${customer.accountCode} · ${customer.country}`,
+              }))
+            : getListOptions(spec.optionsKey);
+          control = `<select ${common}>${renderSelectOptions(options, value)}</select>`;
+        } else if (spec.control === "textarea") {
+          const displayValue = Array.isArray(value)
+            ? spec.format === "table-items"
+              ? value.map((item) => `${item.label}: ${item.value}`).join("\n")
+              : value.join("\n\n")
+            : value ?? "";
+          control = `<textarea ${common} rows="${spec.rows || 3}">${escapeHtml(displayValue)}</textarea>`;
+        } else {
+          const type = spec.control === "date" ? "date" : spec.control === "number" ? "number" : "text";
+          control = `<input ${common} type="${type}" value="${escapeHtml(value ?? "")}" />`;
+        }
+
+        return `
+          <label class="editor-field ${spec.span === "full" ? "span-full" : ""} ${hasError ? "has-error" : ""}" for="${fieldId}">
+            <span>${escapeHtml(spec.label)}${required ? ' <em class="required-mark">*</em>' : ""}</span>
+            ${control}
+            ${hasError ? `<small class="field-error">Champ obligatoire</small>` : ""}
+          </label>
+        `;
+      }
+
+      function getContractTabIcon(title) {
+        const icons = {
+          "Informations générales": "folder",
+          "Equipe gestionnaire": "users",
+          "Finance": "wallet",
+          "Flotte": "plane",
+          "Documents": "fileText",
+          "Widgets": "blocks",
+          "Extraits PDF": "fileText",
+        };
+        return icons[title] || "folder";
+      }
+
+      function renderContractModalHeader(contract) {
+        if (!contract) {
+          elements.contractModalHeader.innerHTML = `<h2>Contrat</h2>`;
+          return;
+        }
+
+        elements.contractModalHeader.innerHTML = `
+          <div class="stack compact-stack">
+            <div class="modal-head-topline">
+              <h2>${state.contractModalMode === "create" ? "Nouveau contrat" : escapeHtml(contract.name || "Contrat")}</h2>
+              <span class="pill ${widgetStatusClass(contract.globalValidationStatus)}">${escapeHtml(contract.globalValidationStatus || "Draft")}</span>
+            </div>
+            <div class="subtle">${escapeHtml(contract.id)} · ${escapeHtml(contract.type || "")}</div>
+          </div>
+        `;
+      }
+
+      function buildEditableContractModalHtml(contract) {
+        if (!contract) {
+          return `<div class="empty">Aucun contrat</div>`;
+        }
+
+        const pages = contract.pdfSimulation?.pages || [];
+        const widgets = contract.widgets || [];
+        const sections = [
+          {
+            title: "Informations générales",
+            fields: [
+              { label: "Nom du contrat", path: "name" },
+              { label: "Type", path: "type", control: "select", optionsKey: "contractTypes" },
+              { label: "Client", path: "customerId", control: "select", optionsKey: "customers" },
+              { label: "Région", path: "region", control: "select", optionsKey: "regions" },
+              { label: "Statut", path: "status", control: "select", optionsKey: "contractStatuses" },
+              { label: "Validation globale", path: "globalValidationStatus", control: "select", optionsKey: "validationStatuses" },
+              { label: "Début", path: "startDate", control: "date" },
+              { label: "Fin", path: "endDate", control: "date" },
+            ],
+          },
+          {
+            title: "Equipe gestionnaire",
+            fields: [
+              { label: "Equipe", path: "managingTeam.name" },
+              { label: "Contact", path: "managingTeam.contact" },
+              { label: "Email", path: "managingTeam.email" },
+              { label: "Téléphone", path: "managingTeam.phone" },
+              { label: "Société", path: "managingTeam.company", control: "select", optionsKey: "managingCompanies" },
+            ],
+          },
+          {
+            title: "Finance",
+            fields: [
+              { label: "Valeur annuelle estimée", path: "financials.estimatedAnnualValue", control: "number", format: "number" },
+              { label: "Devise", path: "financials.currency", control: "select", optionsKey: "currencies" },
+              { label: "Facturation", path: "financials.billingModel", control: "select", optionsKey: "billingModels" },
+              { label: "Révision tarifaire", path: "financials.rateRevision" },
+            ],
+          },
+          {
+            title: "Flotte",
+            fields: [
+              { label: "Programme", path: "fleet.program", control: "select", optionsKey: "programs" },
+              { label: "Moteurs couverts", path: "fleet.enginesCovered", control: "number", format: "number" },
+              { label: "Avions couverts", path: "fleet.aircraftCovered", control: "number", format: "number" },
+              { label: "Base", path: "fleet.base" },
+            ],
+          },
+          {
+            title: "Documents",
+            fields: [
+              { label: "PDF source", path: "documents.sourcePdf" },
+              { label: "Résumé IA", path: "documents.summaryAi", control: "select", optionsKey: "summaryStatuses" },
+              { label: "Pages importantes", path: "documents.importantPages", control: "textarea", format: "number-list", rows: 3, span: "full" },
+            ],
+          },
+          {
+            title: "Widgets",
+            widgetSection: true,
+          },
+          {
+            title: "Extraits PDF",
+            pdfSection: true,
+          },
+        ];
+        const activeTab = sections.some((section) => section.title === state.contractModalTab)
+          ? state.contractModalTab
+          : sections[0].title;
+
+        return `
+          <article class="contract-sheet">
+            <div class="modal-tabs" role="tablist" aria-label="Navigation contrat">
+              ${sections
+                .map(
+                  (section) => `
+                    <button
+                      class="modal-tab-button ${section.title === activeTab ? "active" : ""}"
+                      type="button"
+                      role="tab"
+                      aria-selected="${section.title === activeTab ? "true" : "false"}"
+                      data-contract-tab="${escapeHtml(section.title)}"
+                    >
+                      <span data-lucide="${getContractTabIcon(section.title)}"></span>
+                      ${escapeHtml(section.title)}
+                    </button>
+                  `
+                )
+                .join("")}
+            </div>
+
+            ${sections
+              .map(
+                (section) => `
+                  <div class="sheet-section ${section.title === activeTab ? "" : "hidden"}" data-contract-tab-panel="${escapeHtml(section.title)}">
+                    <h4>${escapeHtml(section.title)}</h4>
+                    ${
+                      section.widgetSection
+                        ? `
+                          <div class="widget-list">
+                            ${widgets
+                              .map((widget, widgetIndex) => `
+                                  <article class="widget-card">
+                                    <div class="editor-grid">
+                                      ${renderEditorField({ label: "Nom widget", path: `widgets.${widgetIndex}.name` }, contract)}
+                                      ${renderEditorField({ label: "Type", path: `widgets.${widgetIndex}.type` }, contract)}
+                                      ${renderEditorField({ label: "Statut", path: `widgets.${widgetIndex}.status`, control: "select", optionsKey: "widgetStatuses" }, contract)}
+                                      ${renderEditorField({ label: "Dernier changement", path: `widgets.${widgetIndex}.lastStatusChange`, control: "date" }, contract)}
+                                      ${renderEditorField({ label: "Accès lecture", path: `widgets.${widgetIndex}.readAccess`, control: "select", optionsKey: "widgetReadAccesses" }, contract)}
+                                      ${renderEditorField({ label: "Accès édition", path: `widgets.${widgetIndex}.editAccess`, control: "select", optionsKey: "widgetEditAccesses" }, contract)}
+                                    </div>
+                                    <div class="widget-inline-meta">
+                                      <span class="subtle">${escapeHtml(widget.id)} · ${escapeHtml(widget.type)}</span>
+                                      <span class="pill ${widgetStatusClass(widget.status)}">${escapeHtml(widget.status)}</span>
+                                    </div>
+                                    ${
+                                      widget.type === "fields"
+                                        ? `
+                                          <div class="editor-grid widget-editor-grid">
+                                            ${Object.entries(widget.data || {})
+                                              .map(([key]) =>
+                                                renderEditorField(
+                                                  { label: key, path: `widgets.${widgetIndex}.data.${key}` },
+                                                  contract
+                                                )
+                                              )
+                                              .join("")}
+                                          </div>
+                                        `
+                                        : ""
+                                    }
+                                    ${
+                                      widget.type === "article"
+                                        ? renderEditorField(
+                                            {
+                                              label: "Contenu",
+                                              path: `widgets.${widgetIndex}.data.paragraphs`,
+                                              control: "textarea",
+                                              format: "paragraphs",
+                                              rows: 5,
+                                              span: "full",
+                                            },
+                                            contract
+                                          )
+                                        : ""
+                                    }
+                                    ${
+                                      widget.type === "table"
+                                        ? renderEditorField(
+                                            {
+                                              label: "Lignes",
+                                              path: `widgets.${widgetIndex}.data.items`,
+                                              control: "textarea",
+                                              format: "table-items",
+                                              rows: 4,
+                                              span: "full",
+                                            },
+                                            contract
+                                          )
+                                        : ""
+                                    }
+                                  </article>
+                                `)
+                              .join("")}
+                          </div>
+                        `
+                        : ""
+                    }
+                    ${
+                      section.pdfSection
+                        ? pages.length
+                          ? pages
+                              .map(
+                                (page) => `
+                                  <div class="preview-subsection">
+                                    <h4>${escapeHtml(page.heading)}</h4>
+                                    ${page.content.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+                                  </div>
+                                `
+                              )
+                              .join("")
+                          : `<div class="empty">Aucun extrait PDF</div>`
+                        : ""
+                    }
+                    ${
+                      !section.widgetSection && !section.pdfSection
+                        ? `
+                          <div class="editor-grid">
+                            ${(section.fields || []).map((field) => renderEditorField(field, contract)).join("")}
+                          </div>
+                        `
+                        : ""
+                    }
+                  </div>
+                `
+              )
+              .join("")}
+
+            ${
+              state.contractModalMode === "create"
+                ? `
+                  <div class="sheet-section modal-actions-row">
+                    ${
+                      state.contractFormErrors.includes("date-order")
+                        ? `<span class="field-error">La date de fin doit être postérieure ou égale à la date de début.</span>`
+                        : `<span></span>`
+                    }
+                    <button class="table-toolbar-button subtle-button" type="button" data-contract-cancel>Annuler</button>
+                    <button class="action-button" type="button" data-contract-create>Créer le contrat</button>
                   </div>
                 `
                 : ""
@@ -757,6 +1380,7 @@
             meta: ["200 OK", "Content-Type: application/json", "Export full dataset"],
             payload: {
               customers: state.customers,
+              ...state.lists,
               contracts: state.contracts,
             },
           };
@@ -818,42 +1442,70 @@
         });
       }
 
-      function updateSelectedContractCustomer(customerName) {
-        const nextCustomer = state.customers.find((customer) => customer.name.toLowerCase() === customerName.trim().toLowerCase());
-        const contract = state.contracts.find((item) => item.id === state.selectedContractId);
+      function bindContractModalEditor(root) {
+        root.querySelectorAll("[data-contract-tab]").forEach((node) => {
+          node.addEventListener("click", () => {
+            state.contractModalTab = node.dataset.contractTab;
+            const contract = getHydratedModalContract();
+            renderContractModalHeader(contract);
+            elements.contractModalContent.innerHTML = buildEditableContractModalHtml(contract);
+            bindContractModalEditor(elements.contractModalContent);
+            renderIcons(elements.contractModal);
+          });
+        });
 
-        if (!contract || !nextCustomer) {
-          return false;
+        const cancelButton = root.querySelector("[data-contract-cancel]");
+        if (cancelButton) {
+          cancelButton.addEventListener("click", () => {
+            closeContractModal();
+          });
         }
 
-        contract.customerId = nextCustomer.id;
-        return true;
-      }
+        const createButton = root.querySelector("[data-contract-create]");
+        if (createButton) {
+          createButton.addEventListener("click", () => {
+            const errors = validateContractDraft(state.draftContract);
+            state.contractFormErrors = errors;
+            if (errors.length) {
+              const contract = getHydratedModalContract();
+              renderContractModalHeader(contract);
+              elements.contractModalContent.innerHTML = buildEditableContractModalHtml(contract);
+              bindContractModalEditor(elements.contractModalContent);
+              renderIcons(elements.contractModal);
+              return;
+            }
 
-      function bindContractCustomerEditor(root) {
-        const searchInput = root.querySelector("#customerSearchInput");
-        const applyButton = root.querySelector("#applyCustomerChangeButton");
-
-        if (!searchInput || !applyButton) {
-          return;
-        }
-
-        const applyChange = () => {
-          if (updateSelectedContractCustomer(searchInput.value)) {
+            state.contracts.unshift(structuredClone(state.draftContract));
+            state.selectedContractId = state.draftContract.id;
+            state.draftContract = null;
+            state.contractFormErrors = [];
+            state.contractModalMode = "edit";
+            state.contractModalTab = "Informations générales";
+            scheduleDatasetPersist();
             render();
-            return;
-          }
+            openContractModal();
+          });
+        }
 
-          searchInput.setCustomValidity("Client introuvable dans la table customers.");
-          searchInput.reportValidity();
-          setTimeout(() => searchInput.setCustomValidity(""), 0);
-        };
+        root.querySelectorAll("[data-field-path]").forEach((node) => {
+          const update = () => {
+            updateContractField(node.dataset.fieldPath, node.value, node.dataset.fieldFormat);
+            if (state.contractModalMode === "create") {
+              const contract = getHydratedModalContract();
+              renderContractModalHeader(contract);
+              elements.contractModalContent.innerHTML = buildEditableContractModalHtml(contract);
+              bindContractModalEditor(elements.contractModalContent);
+              renderIcons(elements.contractModal);
+              return;
+            }
 
-        applyButton.addEventListener("click", applyChange);
-        searchInput.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            applyChange();
+            render();
+            openContractModal();
+          };
+
+          node.addEventListener("change", update);
+          if (node.tagName === "TEXTAREA" || node.tagName === "INPUT") {
+            node.addEventListener("blur", update);
           }
         });
       }
@@ -1051,8 +1703,10 @@
         const contract = getSelectedContract();
         const previewHtml = buildPreviewHtml(contract);
         elements.contractPreview.innerHTML = previewHtml;
-        elements.contractModalContent.innerHTML = previewHtml;
-        bindContractCustomerEditor(elements.contractModalContent);
+        renderContractModalHeader(getHydratedModalContract() || contract);
+        elements.contractModalContent.innerHTML = buildEditableContractModalHtml(getHydratedModalContract() || contract);
+        bindContractModalEditor(elements.contractModalContent);
+        renderIcons(elements.contractModal);
       }
 
       function renderApiConsole() {
@@ -1063,6 +1717,163 @@
         elements.apiRoute.textContent = apiState.route;
         elements.apiMeta.innerHTML = apiState.meta.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join("");
         elements.jsonPayload.textContent = JSON.stringify(apiState.payload, null, 2);
+      }
+
+      function renderReferentialsView() {
+        const tabs = getReferentialKeys();
+        if (!tabs.length) {
+          elements.referentialsContent.innerHTML = `<div class="empty">Aucun référentiel</div>`;
+          elements.referentialsCount.textContent = "0";
+          return;
+        }
+
+        if (!tabs.includes(state.activeReferentialTab)) {
+          state.activeReferentialTab = tabs[0];
+        }
+
+        const activeKey = state.activeReferentialTab;
+        const isCustomers = activeKey === "customers";
+        const values = isCustomers ? state.customers : state.lists[activeKey] || [];
+        elements.referentialsCount.textContent = `${tabs.length} référentiels`;
+
+        elements.referentialsContent.innerHTML = `
+          <div class="referentials-shell">
+            <div class="referentials-tabs" role="tablist" aria-label="Référentiels">
+              ${tabs
+                .map(
+                  (key) => `
+                    <button
+                      class="referential-tab ${key === activeKey ? "active" : ""}"
+                      type="button"
+                      data-referential-tab="${escapeHtml(key)}"
+                    >
+                      ${escapeHtml(key)}
+                    </button>
+                  `
+                )
+                .join("")}
+            </div>
+            <div class="referentials-card">
+              <div class="referentials-toolbar">
+                <div class="subtle">${escapeHtml(activeKey)} · ${values.length} entrées</div>
+                <button class="action-button" type="button" data-referential-add>${isCustomers ? "Ajouter un client" : "Ajouter une valeur"}</button>
+              </div>
+              ${
+                isCustomers
+                  ? `
+                    <div class="referentials-table-wrap">
+                      <table class="referentials-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Code compte</th>
+                            <th>Pays</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${values
+                            .map(
+                              (customer, index) => `
+                                <tr>
+                                  <td><input type="text" value="${escapeHtml(customer.id || "")}" data-referential-customer="${index}" data-customer-field="id" /></td>
+                                  <td><input type="text" value="${escapeHtml(customer.name || "")}" data-referential-customer="${index}" data-customer-field="name" /></td>
+                                  <td><input type="text" value="${escapeHtml(customer.accountCode || "")}" data-referential-customer="${index}" data-customer-field="accountCode" /></td>
+                                  <td><input type="text" value="${escapeHtml(customer.country || "")}" data-referential-customer="${index}" data-customer-field="country" /></td>
+                                  <td><button class="icon-button danger-button" type="button" data-referential-delete="${index}" aria-label="Supprimer"><span data-lucide="x"></span></button></td>
+                                </tr>
+                              `
+                            )
+                            .join("")}
+                        </tbody>
+                      </table>
+                    </div>
+                  `
+                  : `
+                    <div class="referential-values">
+                      ${values
+                        .map(
+                          (value, index) => `
+                            <div class="referential-value-row">
+                              <input type="text" value="${escapeHtml(value)}" data-referential-value="${index}" />
+                              <button class="icon-button danger-button" type="button" data-referential-delete="${index}" aria-label="Supprimer"><span data-lucide="x"></span></button>
+                            </div>
+                          `
+                        )
+                        .join("")}
+                    </div>
+                  `
+              }
+            </div>
+          </div>
+        `;
+
+        bindReferentialsEvents();
+        renderIcons(elements.referentialsContent);
+      }
+
+      function bindReferentialsEvents() {
+        elements.referentialsContent.querySelectorAll("[data-referential-tab]").forEach((node) => {
+          node.addEventListener("click", () => {
+            state.activeReferentialTab = node.dataset.referentialTab;
+            renderReferentialsView();
+          });
+        });
+
+        const addButton = elements.referentialsContent.querySelector("[data-referential-add]");
+        if (addButton) {
+          addButton.addEventListener("click", () => {
+            if (state.activeReferentialTab === "customers") {
+              const nextIndex = state.customers.length + 1;
+              state.customers.push({
+                id: `CUST-${String(nextIndex).padStart(3, "0")}`,
+                name: "",
+                accountCode: "",
+                country: "",
+              });
+            } else {
+              state.lists[state.activeReferentialTab] = [...(state.lists[state.activeReferentialTab] || []), ""];
+            }
+            scheduleDatasetPersist();
+            render();
+          });
+        }
+
+        elements.referentialsContent.querySelectorAll("[data-referential-delete]").forEach((node) => {
+          node.addEventListener("click", () => {
+            const index = Number(node.dataset.referentialDelete);
+            if (state.activeReferentialTab === "customers") {
+              state.customers.splice(index, 1);
+            } else {
+              state.lists[state.activeReferentialTab].splice(index, 1);
+            }
+            scheduleDatasetPersist();
+            render();
+          });
+        });
+
+        elements.referentialsContent.querySelectorAll("[data-referential-value]").forEach((node) => {
+          const update = () => {
+            const index = Number(node.dataset.referentialValue);
+            state.lists[state.activeReferentialTab][index] = node.value;
+            scheduleDatasetPersist();
+          };
+          node.addEventListener("change", update);
+          node.addEventListener("blur", update);
+        });
+
+        elements.referentialsContent.querySelectorAll("[data-referential-customer]").forEach((node) => {
+          const update = () => {
+            const index = Number(node.dataset.referentialCustomer);
+            const field = node.dataset.customerField;
+            state.customers[index][field] = node.value;
+            scheduleDatasetPersist();
+            render();
+          };
+          node.addEventListener("change", update);
+          node.addEventListener("blur", update);
+        });
       }
 
       function isTableLine(line) {
@@ -1234,20 +2045,24 @@
 
       function renderActiveView() {
         const isContracts = state.activeView === "contracts";
+        const isReferentials = state.activeView === "referentials";
         const isDocs = state.activeView === "docs";
         const isApi = state.activeView === "api";
 
         if (elements.contractsView) {
           elements.contractsView.classList.toggle("hidden", !isContracts);
         }
+        if (elements.referentialsView) {
+          elements.referentialsView.classList.toggle("hidden", !isReferentials);
+        }
         if (elements.docsView) {
           elements.docsView.classList.toggle("hidden", !isDocs);
         }
         if (elements.previewSidebar) {
-          elements.previewSidebar.classList.toggle("hidden", !isApi);
+          elements.previewSidebar.classList.toggle("hidden", !(isContracts || isApi));
         }
         if (elements.previewPanel) {
-          elements.previewPanel.classList.add("hidden");
+          elements.previewPanel.classList.toggle("hidden", !isContracts);
         }
         if (elements.apiConsole) {
           elements.apiConsole.classList.toggle("hidden", !isApi);
@@ -1304,8 +2119,27 @@
       }
 
       function closeContractModal() {
+        if (state.contractModalMode === "create") {
+          state.draftContract = null;
+          state.contractFormErrors = [];
+          state.contractModalTab = "Informations générales";
+          state.contractModalMode = "edit";
+          render();
+        }
         elements.contractModal.classList.remove("open");
         elements.contractModal.setAttribute("aria-hidden", "true");
+      }
+
+      function openCreateContractModal() {
+        state.contractModalMode = "create";
+        state.contractModalTab = "Informations générales";
+        state.draftContract = createEmptyContractDraft();
+        state.contractFormErrors = [];
+        renderContractModalHeader(getHydratedModalContract());
+        elements.contractModalContent.innerHTML = buildEditableContractModalHtml(getHydratedModalContract());
+        bindContractModalEditor(elements.contractModalContent);
+        renderIcons(elements.contractModal);
+        openContractModal();
       }
 
       function bindStaticEvents() {
@@ -1330,18 +2164,13 @@
         elements.searchInput.addEventListener("input", render);
         elements.statusFilter.addEventListener("change", render);
         elements.typeFilter.addEventListener("change", render);
-        elements.filterModeSwitch.querySelectorAll("[data-filter-mode]").forEach((node) => {
-          node.addEventListener("click", () => {
-            state.filterMode = node.dataset.filterMode;
-            state.activeHeaderPopover = null;
-            state.headerFiltersOpen = state.filterMode === "3" ? state.headerFiltersOpen : false;
-            render();
-          });
-        });
         elements.apiContractSelect.addEventListener("change", () => {
           state.selectedContractId = elements.apiContractSelect.value || state.contracts[0]?.id || null;
           render();
         });
+        if (elements.openCreateContractModalButton) {
+          elements.openCreateContractModalButton.addEventListener("click", openCreateContractModal);
+        }
         if (elements.openPreviewModalButton) {
           elements.openPreviewModalButton.addEventListener("click", openContractModal);
         }
@@ -1369,15 +2198,14 @@
       }
 
       function render() {
+        refreshDerivedControls();
         applyFilters();
         renderActiveView();
         renderContractsList();
         renderPreview();
+        renderReferentialsView();
         renderApiConsole();
         renderIcons();
-        elements.filterModeSwitch.querySelectorAll("[data-filter-mode]").forEach((node) => {
-          node.classList.toggle("active", node.dataset.filterMode === state.filterMode);
-        });
       }
 
       async function loadDocs() {
@@ -1398,21 +2226,22 @@
       async function init() {
         try {
           await loadDocs();
+          const cachedRecord = await loadDatasetFromIndexedDb().catch(() => null);
 
-          const response = await fetch("./data.json");
-          if (!response.ok) {
-            throw new Error(`Unable to load data.json (${response.status})`);
+          if (cachedRecord?.payload) {
+            applyDatasetSnapshot(cachedRecord.payload);
+          } else {
+            const response = await fetch("./data.json");
+            if (!response.ok) {
+              throw new Error(`Unable to load data.json (${response.status})`);
+            }
+
+            const payload = await response.json();
+            applyDatasetSnapshot(payload);
+            scheduleDatasetPersist();
           }
 
-          const payload = await response.json();
-          state.customers = payload.customers || [];
-          state.contracts = payload.contracts || [];
-          state.filteredContracts = [...state.contracts];
-          state.selectedContractId = state.contracts[0]?.id || null;
-
-          buildOptions(elements.statusFilter, [...new Set(state.contracts.map((contract) => contract.status))]);
-          buildOptions(elements.typeFilter, [...new Set(state.contracts.map((contract) => contract.type))]);
-          buildContractSelectOptions();
+          refreshDerivedControls();
         } catch (error) {
           elements.contractsList.innerHTML = `<div class="empty">Chargement impossible</div>`;
           console.error(error);

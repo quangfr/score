@@ -11,6 +11,18 @@
     { "id": "CUST-009", "name": "ANA", "accountCode": "ANA-LIC-05", "country": "Japan" },
     { "id": "CUST-010", "name": "Turkish Airlines", "accountCode": "THY-TM-08", "country": "Turkey" }
   ],
+  "contractTypes": ["T&M", "RPFH", "GTA", "License"],
+  "regions": ["Africa", "Americas", "APAC", "Europe", "Middle East"],
+  "contractStatuses": ["Active", "Closed", "Draft", "Renewal due"],
+  "validationStatuses": ["Draft", "Non applicable", "Ready for validation", "Valid"],
+  "currencies": ["EUR", "USD"],
+  "billingModels": ["Annual license", "Global Technical Assistance", "Rate per Flight Hour", "Time and Material"],
+  "programs": ["A220", "A320ceo", "A320neo", "A321neo", "A350", "A380", "B737MAX", "B737NG", "B787"],
+  "summaryStatuses": ["Résumé IA archivé", "Résumé IA brouillon", "Résumé IA disponible", "Résumé IA en cours"],
+  "managingCompanies": ["Safran Aircraft Engines"],
+  "widgetStatuses": ["Draft", "Pending for external data", "Ready for validation", "Valid"],
+  "widgetReadAccesses": ["Lecture avec données financières", "Lecture sans données financières"],
+  "widgetEditAccesses": ["Administration", "Lecture et édition"],
   "contracts": [
     {
       "id": "CTR-2024-001",
